@@ -1,9 +1,11 @@
 package com.johnstanley.attachmentapp.presentation.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -33,6 +35,7 @@ fun MyOutlinedTextField(
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
         value = value,
+        singleLine = true,
         onValueChange = { onValueChange(it) },
         placeholder = {
             Text(text = placeHolder)
@@ -57,6 +60,8 @@ fun PassWordField(
         onValueChange = {
             onValueChange(it)
         },
+        singleLine = true
+        ,
         label = { Text(label) },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -77,4 +82,11 @@ fun PassWordField(
         },
     )
     Spacer(modifier = Modifier.height(5.dp))
+}
+
+@Composable
+fun MyProgressIndicator() {
+    Column {
+        CircularProgressIndicator()
+    }
 }

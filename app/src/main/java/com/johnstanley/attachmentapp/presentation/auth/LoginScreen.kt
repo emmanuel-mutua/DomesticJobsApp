@@ -17,7 +17,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -42,6 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
 import com.johnstanley.attachmentapp.presentation.components.MyProgressIndicator
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
@@ -49,20 +49,16 @@ import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun RegisterScreen(
+fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel(),
     userData: UserData,
-    navigateToLogin: () -> Unit
+    navigateToRegister: () -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
     val isLoading = userData.isLoading
-    val fullName = userData.fullName
-    val registrationNumber = userData.registrationNumber
     val email = userData.email
-    val phoneNumber = userData.phoneNumber
     val role = userData.role
     val password = userData.password
-    val confirmPassword = userData.confirmPassword
     var selectedRole by remember { mutableStateOf(role) }
     val roles = listOf("Staff", "Student")
 
@@ -78,25 +74,22 @@ fun RegisterScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            }
             Spacer(modifier = Modifier.height(64.dp))
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Welcome!",
+                text = "Welcome Back!",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
             )
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Register an account",
+                text = "Login",
                 fontSize = 19.sp,
                 fontWeight = FontWeight.Light,
                 textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(50.dp))
 
             Row(
                 modifier = Modifier
@@ -124,37 +117,6 @@ fun RegisterScreen(
             }
 
             MyOutlinedTextField(
-                value = fullName,
-                placeHolder = "FullName",
-                onValueChange = { viewModel.setFullName(it) },
-                isError = false,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                ),
-            )
-            if (selectedRole == "Student") {
-                MyOutlinedTextField(
-                    value = registrationNumber,
-                    placeHolder = "Registration Number",
-                    onValueChange = { viewModel.setRegNoName(it) },
-                    isError = false,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                    ),
-                )
-            }
-
-            MyOutlinedTextField(
-                value = phoneNumber,
-                placeHolder = "Phone Number",
-                onValueChange = { viewModel.setPhoneNumber(it) },
-                isError = false,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Phone,
-                ),
-            )
-
-            MyOutlinedTextField(
                 value = email,
                 placeHolder = "Email",
                 onValueChange = { viewModel.setEmail(it) },
@@ -171,12 +133,6 @@ fun RegisterScreen(
                 label = "Password",
                 onValueChange = { viewModel.setPassword(it) },
             )
-            PassWordField(
-                isPasswordVisible = passwordVisible,
-                passwordValue = confirmPassword,
-                label = "ConfirmPassword",
-                onValueChange = { viewModel.setConfirmPassword(it) },
-            )
 
 //            if (passwordState.error != "") {
 //                Text(
@@ -188,7 +144,7 @@ fun RegisterScreen(
 //                )
 //            }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(50.dp))
             Button(
                 onClick = {
                     viewModel.registerUser()
@@ -204,7 +160,7 @@ fun RegisterScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp),
-                        text = "Register",
+                        text = "Login",
                         textAlign = TextAlign.Center,
                         fontSize = 18.sp,
                     )
@@ -213,7 +169,7 @@ fun RegisterScreen(
                 }
             }
             TextButton(
-                onClick = navigateToLogin,
+                onClick = navigateToRegister,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
@@ -221,7 +177,7 @@ fun RegisterScreen(
                         withStyle(
                             style = SpanStyle(),
                         ) {
-                            append("Already have an account?")
+                            append("No Account?")
                         }
                         append(" ")
                         withStyle(
@@ -230,7 +186,7 @@ fun RegisterScreen(
                                 fontWeight = FontWeight.Bold,
                             ),
                         ) {
-                            append("Login")
+                            append("Register")
                         }
                     },
                     fontFamily = FontFamily.SansSerif,
@@ -243,7 +199,7 @@ fun RegisterScreen(
 
 @Preview
 @Composable
-fun RegisterScreenPrev() {
+fun LoginScreenPrev() {
     AttachmentAppTheme {
     }
 }

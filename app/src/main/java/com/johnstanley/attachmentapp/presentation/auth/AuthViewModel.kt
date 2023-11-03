@@ -1,6 +1,5 @@
 package com.johnstanley.attachmentapp.presentation.auth
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -27,6 +26,7 @@ class AuthViewModel : ViewModel() {
             )
         }
     }
+
     fun setEmail(email: String) {
         _registerState.update {
             it.copy(
@@ -34,6 +34,7 @@ class AuthViewModel : ViewModel() {
             )
         }
     }
+
     fun setPhoneNumber(phoneNumber: String) {
         _registerState.update {
             it.copy(
@@ -72,12 +73,14 @@ class AuthViewModel : ViewModel() {
 }
 
 data class UserData(
-    var isLoading: Boolean = false,
-    var fullName: String = "",
-    var registrationNumber: String = "",
-    var email: String = "",
-    var phoneNumber: String = "",
-    var role: String = "",
-    var password: String = "",
-    var confirmPassword: String = "",
+    val isLoading: Boolean = false,
+    val fullName: String = "",
+    val registrationNumber: String = "",
+    val email: String = "",
+    val phoneNumber: String = "",
+    val role: String = "",
+    val password: String = "",
+    val confirmPassword: String = "",
+    val isUserLoggedIn: Boolean = false,
+    val goToStudentHomeScreen: Boolean = false,
 )

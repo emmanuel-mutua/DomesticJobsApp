@@ -52,6 +52,7 @@ fun PassWordField(
     passwordValue: String,
     label: String,
     onValueChange: (String) -> Unit,
+    isError: Boolean
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(isPasswordVisible) }
     TextField(
@@ -65,7 +66,7 @@ fun PassWordField(
         label = { Text(label) },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        isError = false,
+        isError = isError,
         trailingIcon = {
             val imageResource = if (passwordVisible) {
                 R.drawable.baseline_visibility_24

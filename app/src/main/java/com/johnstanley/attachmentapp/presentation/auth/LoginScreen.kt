@@ -1,6 +1,8 @@
 package com.johnstanley.attachmentapp.presentation.auth
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +25,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -42,10 +47,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
 import com.johnstanley.attachmentapp.presentation.components.MyProgressIndicator
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
+import com.stevdzasan.messagebar.ContentWithMessageBar
+import com.stevdzasan.messagebar.rememberMessageBarState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -53,86 +61,132 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel(),
     userData: UserData,
     navigateToRegister: () -> Unit,
+    navigateToHome: () -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
-    val isLoading = userData.isLoading
-    val email = userData.email
-    val role = userData.role
-    val password = userData.password
+    val messageBarState = rememberMessageBarState()
+    var isLoading by remember { mutableStateOf(false) }
+    var isError by remember { mutableStateOf(false) }
+    var email by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
+    var role by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(role) }
+    val context = LocalContext.current
     val roles = listOf("Staff", "Student")
+    val signInResponse by viewModel.signInResponse.collectAsState()
+    when (signInResponse) {
+        Response.Loading -> {
+            isLoading = true
+        }
+
+        is Response.Success -> {
+            isLoading = false
+            val isSignedIn = (signInResponse as Response.Success<Boolean>).data
+            if (isSignedIn) {
+                isLoading = false
+                if (viewModel.isEmailVerified) {
+                    messageBarState.addSuccess("Success")
+                    navigateToHome()
+                } else {
+                }
+            } else {
+            }
+        }
+
+        is Response.Failure -> {
+            // Show Toast message for localized exception message
+            isError = true
+            isLoading = false
+            errorMessage = (signInResponse as Response.Failure).message
+            Log.d("ErrorMsg Login", errorMessage)
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        else -> {}
+    }
 
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding(),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Spacer(modifier = Modifier.height(64.dp))
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "Welcome Back!",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "Login",
-                fontSize = 19.sp,
-                fontWeight = FontWeight.Light,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(50.dp))
-
-            Row(
+        ContentWithMessageBar(messageBarState = messageBarState) {
+//            messageBarState.addSuccess(userData.errorMsg)
+//            LaunchedEffect(isError) {
+//                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+//                isError = false
+//            }
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp, start = 50.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Select:")
-                roles.forEach { roleOption ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(
-                            selected = roleOption == selectedRole,
-                            onClick = {
-                                selectedRole = roleOption
-                                viewModel.setRole(roleOption)
-                            },
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(roleOption)
+                Spacer(modifier = Modifier.height(64.dp))
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Welcome Back!",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Login",
+                    fontSize = 19.sp,
+                    fontWeight = FontWeight.Light,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(50.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp, start = 50.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("Select:")
+                    roles.forEach { roleOption ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(
+                                selected = roleOption == selectedRole,
+                                onClick = {
+                                    selectedRole = roleOption
+                                    viewModel.setRole(roleOption)
+                                },
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(roleOption)
+                        }
                     }
                 }
-            }
 
-            MyOutlinedTextField(
-                value = email,
-                placeHolder = "Email",
-                onValueChange = { viewModel.setEmail(it) },
-                isError = false,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                ),
-            )
-            Spacer(modifier = Modifier.height(10.dp))
+                MyOutlinedTextField(
+                    value = email,
+                    placeHolder = "Email",
+                    onValueChange = { email = it },
+                    isError = false,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                    ),
+                )
+                Spacer(modifier = Modifier.height(10.dp))
 
-            PassWordField(
-                isPasswordVisible = passwordVisible,
-                passwordValue = password,
-                label = "Password",
-                onValueChange = { viewModel.setPassword(it) },
-            )
+                PassWordField(
+                    isPasswordVisible = passwordVisible,
+                    passwordValue = password,
+                    label = "Password",
+                    isError = false,
+                    onValueChange = { password = it },
+                )
 
 //            if (passwordState.error != "") {
 //                Text(
@@ -144,54 +198,67 @@ fun LoginScreen(
 //                )
 //            }
 
-            Spacer(modifier = Modifier.height(50.dp))
-            Button(
-                onClick = {
-                    viewModel.registerUser()
-                },
-                shape = RoundedCornerShape(16),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
-            ) {
-                if (!isLoading) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        text = "Login",
-                        textAlign = TextAlign.Center,
-                        fontSize = 18.sp,
-                    )
-                } else {
-                    MyProgressIndicator()
-                }
-            }
-            TextButton(
-                onClick = navigateToRegister,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(),
-                        ) {
-                            append("No Account?")
+                Spacer(modifier = Modifier.height(50.dp))
+                Button(
+                    onClick = {
+                        if (email.isEmpty() && password.isEmpty()) {
+                            Toast.makeText(context, "All fields required", Toast.LENGTH_SHORT)
+                                .show()
+                            return@Button
                         }
-                        append(" ")
-                        withStyle(
-                            style = SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                            ),
-                        ) {
-                            append("Register")
-                        }
+                        viewModel.signInEmailAndPassword(email, password)
                     },
-                    fontFamily = FontFamily.SansSerif,
-                    textAlign = TextAlign.Center,
-                )
+                    shape = RoundedCornerShape(16),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
+                ) {
+                    if (!isLoading) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            text = "Login",
+                            textAlign = TextAlign.Center,
+                            fontSize = 18.sp,
+                        )
+                    } else {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            text = "Loading ...",
+                            textAlign = TextAlign.Center,
+                            fontSize = 18.sp,
+                        )
+                    }
+                }
+                TextButton(
+                    onClick = navigateToRegister,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(
+                                style = SpanStyle(),
+                            ) {
+                                append("No Account?")
+                            }
+                            append(" ")
+                            withStyle(
+                                style = SpanStyle(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                            ) {
+                                append("Register")
+                            }
+                        },
+                        fontFamily = FontFamily.SansSerif,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
     }

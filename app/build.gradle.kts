@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 //    id("kotlin-kapt")
 }
 
@@ -71,6 +72,13 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("androidx.navigation:navigation-compose:2.7.4")
 
+    // FIREBASE
+    implementation("com.google.firebase:firebase-firestore:24.9.1")
+    implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-auth:21.1.0")
+
+
     // dagger hilt
     implementation("com.google.dagger:hilt-android:2.48.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
@@ -95,4 +103,3 @@ dependencies {
     // IMAGE DISPLAY
     implementation("io.coil-kt:coil-compose:2.5.0")
 }
-

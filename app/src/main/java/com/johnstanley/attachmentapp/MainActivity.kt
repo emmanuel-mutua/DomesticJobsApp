@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    AttachmentApp(name = "Emmanuel")
+                    AttachmentApp(name = "AttachMentApp")
                 }
             }
         }
@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AttachmentApp(name: String, modifier: Modifier = Modifier) {
-    AuthNavGraph(startDestination = AuthNavigation.Login.route)
+    AuthNavGraph()
 }
 
 @Preview(showBackground = true)

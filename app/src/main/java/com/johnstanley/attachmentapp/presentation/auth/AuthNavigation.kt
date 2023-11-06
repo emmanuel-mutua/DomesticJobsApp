@@ -11,14 +11,26 @@ import com.johnstanley.attachmentapp.presentation.staff.home.StaffHomeScreen
 import com.johnstanley.attachmentapp.presentation.student.home.StudentHomeScreen
 
 @Composable
-fun AuthNavGraph(startDestination: String) {
+fun AuthNavGraph() {
     val navController = rememberNavController()
     val viewModel: AuthViewModel = hiltViewModel()
+    val startDestination = if (viewModel.currentUser == null) {
+        AuthNavigation.Login.route
+    } else {
+        AuthNavigation.Home.route
+    }
     val userData = viewModel.registerState.collectAsState().value
     NavHost(navController = navController, startDestination = startDestination) {
-        loginScreen(viewModel = viewModel, userData = userData, navigateToRegister = {
-            navController.navigate(AuthNavigation.Register.route)
-        })
+        loginScreen(
+            viewModel = viewModel,
+            userData = userData,
+            navigateToRegister = {
+                navController.navigate(AuthNavigation.Register.route)
+            },
+            navigateToHome = {
+                navController.navigate(AuthNavigation.Home.route)
+            },
+        )
         registerScreen(userData = userData, viewModel = viewModel, navigateToLogin = {
             navController.navigate(AuthNavigation.Login.route)
         })
@@ -30,12 +42,14 @@ fun NavGraphBuilder.loginScreen(
     viewModel: AuthViewModel,
     userData: UserData,
     navigateToRegister: () -> Unit,
+    navigateToHome: () -> Unit,
 ) {
     composable(AuthNavigation.Login.route) {
         LoginScreen(
             viewModel = viewModel,
             userData = userData,
             navigateToRegister = navigateToRegister,
+            navigateToHome = navigateToHome,
         )
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -47,20 +48,22 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
+import com.johnstanley.attachmentapp.presentation.components.MyToastMessage
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
 import com.stevdzasan.messagebar.ContentWithMessageBar
+import com.stevdzasan.messagebar.MessageBarState
 import com.stevdzasan.messagebar.rememberMessageBarState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun RegisterScreen(
     viewModel: AuthViewModel = hiltViewModel(),
-    userData: UserData,
-    navigateToLogin: (customMessage: String) -> Unit,
+    messageBarState: MessageBarState,
+    onSuccessRegistration: () -> Unit,
+    onGotoLoginClicked: () -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
-    val messageBarState = rememberMessageBarState()
     var isLoading by remember { mutableStateOf(false) }
     var fullName by remember { mutableStateOf("") }
     var registrationNumber by remember { mutableStateOf("") }
@@ -71,7 +74,6 @@ fun RegisterScreen(
     val isPassWordError by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(role) }
-    var customMessage by remember { mutableStateOf("") }
     val roles = listOf("Staff", "Student")
     val context = LocalContext.current
     val signUpResponse by viewModel.signUpResponse.collectAsState()
@@ -84,13 +86,8 @@ fun RegisterScreen(
             isLoading = false
             val isSignedUp = (signUpResponse as Response.Success<Boolean>).data
             if (isSignedUp) {
-                customMessage = "Success Please Verify Email"
-                LaunchedEffect(Unit) {
-                    Toast.makeText(context, customMessage, Toast.LENGTH_SHORT)
-                        .show()
-                }
-                viewModel.sendEmailVerification()
-                navigateToLogin(customMessage)
+                MyToastMessage(context = context, message = "Account created, Please verify email")
+                onSuccessRegistration()
             }
         }
 
@@ -255,18 +252,11 @@ fun RegisterScreen(
                             fontSize = 18.sp,
                         )
                     } else {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            text = "Loading ...",
-                            textAlign = TextAlign.Center,
-                            fontSize = 18.sp,
-                        )
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
                 TextButton(
-                    onClick = { navigateToLogin("Back to Login") },
+                    onClick = onGotoLoginClicked,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(

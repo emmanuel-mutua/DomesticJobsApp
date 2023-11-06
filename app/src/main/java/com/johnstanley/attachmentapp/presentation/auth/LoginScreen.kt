@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -46,25 +47,28 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
+import com.johnstanley.attachmentapp.presentation.components.MyToastMessage
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
 import com.stevdzasan.messagebar.ContentWithMessageBar
 import com.stevdzasan.messagebar.rememberMessageBarState
+import kotlinx.coroutines.delay
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginScreen(
+    navController: NavController,
     viewModel: AuthViewModel = hiltViewModel(),
     userData: UserData,
-    navigateToRegister: () -> Unit,
+    onRegisterButtonClicked: () -> Unit,
     navigateToHome: () -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
-    val messageBarState = rememberMessageBarState()
     var isLoading by remember { mutableStateOf(false) }
+    var isSignedIn by remember { mutableStateOf(false) }
     var isError by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
@@ -81,17 +85,10 @@ fun LoginScreen(
 
         is Response.Success -> {
             isLoading = false
-            val isSignedIn = (signInResponse as Response.Success<Boolean>).data
+            var isSignedIn = (signInResponse as Response.Success<Boolean>).data
             if (isSignedIn) {
                 isLoading = false
-                if (viewModel.isEmailVerified) {
-                    messageBarState.addSuccess("Success")
-                    navigateToHome()
-                } else {
-                    LaunchedEffect(Unit) {
-                        Toast.makeText(context, "Email not verified, please verify", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                isSignedIn = true
             } else {
                 LaunchedEffect(Unit) {
                     Toast.makeText(context, "Invalid Credentials", Toast.LENGTH_SHORT).show()
@@ -119,12 +116,19 @@ fun LoginScreen(
             .fillMaxSize()
             .statusBarsPadding(),
     ) {
+        val messageBarState = rememberMessageBarState()
         ContentWithMessageBar(messageBarState = messageBarState) {
-//            messageBarState.addSuccess(userData.errorMsg)
-//            LaunchedEffect(isError) {
-//                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-//                isError = false
-//            }
+            LaunchedEffect(Unit) {
+                if (isSignedIn) {
+                    if (!viewModel.isEmailVerified) {
+                        MyToastMessage(context = context, message = "Please verify email")
+                    } else {
+                        MyToastMessage(context = context, message = "Successfully Authenticated")
+                        delay(1000)
+                        navigateToHome()
+                    }
+                }
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -229,18 +233,11 @@ fun LoginScreen(
                             fontSize = 18.sp,
                         )
                     } else {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            text = "Loading ...",
-                            textAlign = TextAlign.Center,
-                            fontSize = 18.sp,
-                        )
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
                 TextButton(
-                    onClick = navigateToRegister,
+                    onClick = { navController.navigate(AuthNavigation.Register.route) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(

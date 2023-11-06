@@ -1,13 +1,11 @@
 package com.johnstanley.attachmentapp.presentation.auth
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.data.repository.AuthRepository
-import com.johnstanley.attachmentapp.data.repository.SignUpResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,8 +28,9 @@ class AuthViewModel @Inject constructor(
 
     private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.FirstLaunch)
     val signInResponse = _signInResponse.asStateFlow()
-    var signUpResponse by mutableStateOf<SignUpResponse>(Response.Success(false))
-    var signOutResponse by mutableStateOf<SignUpResponse>(Response.Success(false))
+
+    private val _signUpResponse = MutableStateFlow<Response<Boolean>>(Response.FirstLaunch)
+    val signUpResponse = _signUpResponse.asStateFlow()
 
     fun signInEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
@@ -59,8 +58,8 @@ class AuthViewModel @Inject constructor(
 
     fun signUpEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
-            signUpResponse = Response.Loading
-            signUpResponse = authRepo.signUpEmailAndPassword(email, password)
+            _signUpResponse.value = Response.Loading
+            _signUpResponse.value = authRepo.signUpEmailAndPassword(email, password)
         }
     }
 
@@ -71,8 +70,7 @@ class AuthViewModel @Inject constructor(
     }
 
     fun signOut() {
-        signOutResponse = Response.Loading
-        signOutResponse = authRepo.signOut()
+        authRepo.signOut()
     }
 
     fun signUpUser(email: String, password: String) {

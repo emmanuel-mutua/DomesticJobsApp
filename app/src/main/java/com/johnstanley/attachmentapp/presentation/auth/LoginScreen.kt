@@ -49,7 +49,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
-import com.johnstanley.attachmentapp.presentation.components.MyProgressIndicator
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
 import com.stevdzasan.messagebar.ContentWithMessageBar
@@ -89,8 +88,14 @@ fun LoginScreen(
                     messageBarState.addSuccess("Success")
                     navigateToHome()
                 } else {
+                    LaunchedEffect(Unit) {
+                        Toast.makeText(context, "Email not verified, please verify", Toast.LENGTH_SHORT).show()
+                    }
                 }
             } else {
+                LaunchedEffect(Unit) {
+                    Toast.makeText(context, "Invalid Credentials", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 

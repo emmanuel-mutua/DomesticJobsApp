@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
-import com.johnstanley.attachmentapp.presentation.components.MyProgressIndicator
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
 import com.stevdzasan.messagebar.ContentWithMessageBar
@@ -57,7 +57,7 @@ import com.stevdzasan.messagebar.rememberMessageBarState
 fun RegisterScreen(
     viewModel: AuthViewModel = hiltViewModel(),
     userData: UserData,
-    navigateToLogin: () -> Unit,
+    navigateToLogin: (customMessage: String) -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
     val messageBarState = rememberMessageBarState()
@@ -71,25 +71,29 @@ fun RegisterScreen(
     val isPassWordError by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(role) }
+    var customMessage by remember { mutableStateOf("") }
     val roles = listOf("Staff", "Student")
     val context = LocalContext.current
-    when (val signInResponse = viewModel.signUpResponse) {
+    val signUpResponse by viewModel.signUpResponse.collectAsState()
+    when (signUpResponse) {
         Response.Loading -> {
             isLoading = true
         }
 
         is Response.Success -> {
-            val isSignedUp = signInResponse.data
+            isLoading = false
+            val isSignedUp = (signUpResponse as Response.Success<Boolean>).data
             if (isSignedUp) {
-                messageBarState.addSuccess("Success Verify Email")
-                isLoading = false
+                customMessage = "Success Please Verify Email"
                 viewModel.sendEmailVerification()
-                navigateToLogin()
+                navigateToLogin(customMessage)
             }
         }
 
-        is Response.Failure -> signInResponse.apply {
-            LaunchedEffect(message) {
+        is Response.Failure -> {
+            isLoading = false
+            val message = (signUpResponse as Response.Failure).message
+            LaunchedEffect(Unit) {
                 Toast.makeText(context, message, Toast.LENGTH_SHORT)
                     .show()
             }
@@ -247,11 +251,18 @@ fun RegisterScreen(
                             fontSize = 18.sp,
                         )
                     } else {
-                        MyProgressIndicator()
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            text = "Loading ...",
+                            textAlign = TextAlign.Center,
+                            fontSize = 18.sp,
+                        )
                     }
                 }
                 TextButton(
-                    onClick = navigateToLogin,
+                    onClick = { navigateToLogin("Back to Login") },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(

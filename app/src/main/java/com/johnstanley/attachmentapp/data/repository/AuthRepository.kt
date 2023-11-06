@@ -80,8 +80,24 @@ class AuthAuthRepositoryImpl @Inject constructor(
 
     override suspend fun signUpEmailAndPassword(email: String, password: String): SignUpResponse {
         return try {
-            auth.createUserWithEmailAndPassword(email, password)
-            Response.Success(true)
+            suspendCoroutine { continuation ->
+                auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("Auth", "Sign in successful")
+                            continuation.resume(Response.Success(true))
+                        } else {
+                            task.exception?.let { exception ->
+                                Log.d("Auth, Exception", "${exception.localizedMessage}")
+                                continuation.resume(
+                                    Response.Failure(
+                                        exception.localizedMessage ?: "Unknown error",
+                                    ),
+                                )
+                            }
+                        }
+                    }
+            }
         } catch (e: Exception) {
             Response.Failure("E")
         } catch (e: FirebaseAuthException) {

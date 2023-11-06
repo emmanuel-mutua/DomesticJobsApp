@@ -17,7 +17,7 @@ fun AuthNavGraph() {
     val startDestination = if (viewModel.currentUser == null) {
         AuthNavigation.Login.route
     } else {
-        AuthNavigation.Home.route
+        AuthNavigation.Login.route
     }
     val userData = viewModel.registerState.collectAsState().value
     NavHost(navController = navController, startDestination = startDestination) {
@@ -57,7 +57,7 @@ fun NavGraphBuilder.loginScreen(
 fun NavGraphBuilder.registerScreen(
     userData: UserData,
     viewModel: AuthViewModel,
-    navigateToLogin: () -> Unit,
+    navigateToLogin: (customMessage: String) -> Unit,
 ) {
     composable(AuthNavigation.Register.route) {
         RegisterScreen(

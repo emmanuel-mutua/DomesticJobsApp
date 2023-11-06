@@ -85,6 +85,10 @@ fun RegisterScreen(
             val isSignedUp = (signUpResponse as Response.Success<Boolean>).data
             if (isSignedUp) {
                 customMessage = "Success Please Verify Email"
+                LaunchedEffect(Unit) {
+                    Toast.makeText(context, customMessage, Toast.LENGTH_SHORT)
+                        .show()
+                }
                 viewModel.sendEmailVerification()
                 navigateToLogin(customMessage)
             }

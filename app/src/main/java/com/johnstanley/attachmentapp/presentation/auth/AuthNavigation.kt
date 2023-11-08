@@ -2,14 +2,12 @@ package com.johnstanley.attachmentapp.presentation.auth
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.johnstanley.attachmentapp.presentation.components.MyToastMessage
 import com.johnstanley.attachmentapp.presentation.staff.home.StaffHomeScreen
 import com.johnstanley.attachmentapp.presentation.student.home.StudentHomeScreen
 import com.stevdzasan.messagebar.rememberMessageBarState
@@ -28,15 +26,17 @@ fun AuthNavGraph() {
         loginScreen(
             navController= navController,
             viewModel = viewModel,
-            userData = userData,
+            authStateData = userData,
             navigateToRegister = {
                 navController.navigate(AuthNavigation.Register.route)
+                navController.popBackStack()
             },
             navigateToHome = {
                 navController.navigate(AuthNavigation.Home.route)
             },
         )
         registerScreen(viewModel = viewModel, navigateToLogin = {
+            navController.popBackStack()
             navController.navigate(AuthNavigation.Login.route)
         })
         homeScreen(isStudentLoggedIn = userData.goToStudentHomeScreen)
@@ -46,7 +46,7 @@ fun AuthNavGraph() {
 fun NavGraphBuilder.loginScreen(
     navController : NavController,
     viewModel: AuthViewModel,
-    userData: UserData,
+    authStateData: AuthStateData,
     navigateToRegister: () -> Unit,
     navigateToHome: () -> Unit,
 ) {
@@ -54,7 +54,7 @@ fun NavGraphBuilder.loginScreen(
         LoginScreen(
             navController = navController,
             viewModel = viewModel,
-            userData = userData,
+            authStateData = authStateData,
             onRegisterButtonClicked = navigateToRegister,
             navigateToHome = navigateToHome,
         )

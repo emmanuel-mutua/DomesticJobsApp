@@ -51,6 +51,8 @@ import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
 import com.johnstanley.attachmentapp.presentation.components.MyToastMessage
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
+import com.johnstanley.attachmentapp.utils.Contants.StaffText
+import com.johnstanley.attachmentapp.utils.Contants.StudentText
 import com.stevdzasan.messagebar.ContentWithMessageBar
 import com.stevdzasan.messagebar.MessageBarState
 import com.stevdzasan.messagebar.rememberMessageBarState
@@ -71,10 +73,10 @@ fun RegisterScreen(
     var phoneNumber by remember { mutableStateOf("") }
     val role by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val isPassWordError by remember { mutableStateOf(false) }
+    var isPassWordError by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(role) }
-    val roles = listOf("Staff", "Student")
+    val roles = listOf(StaffText, StudentText)
     val context = LocalContext.current
     val signUpResponse by viewModel.signUpResponse.collectAsState()
     when (signUpResponse) {
@@ -86,7 +88,11 @@ fun RegisterScreen(
             isLoading = false
             val isSignedUp = (signUpResponse as Response.Success<Boolean>).data
             if (isSignedUp) {
-                MyToastMessage(context = context, message = "Account created, Please verify email")
+                LaunchedEffect(Unit) {
+                    viewModel.saveUserToDataBase()
+                    Toast.makeText(context, "Account created, Please verify email", Toast.LENGTH_LONG)
+                        .show()
+                }
                 onSuccessRegistration()
             }
         }
@@ -167,7 +173,7 @@ fun RegisterScreen(
                         keyboardType = KeyboardType.Text,
                     ),
                 )
-                if (selectedRole == "Student") {
+                if (selectedRole == StudentText) {
                     MyOutlinedTextField(
                         value = registrationNumber,
                         placeHolder = "Registration Number",
@@ -204,7 +210,7 @@ fun RegisterScreen(
                     isPasswordVisible = passwordVisible,
                     passwordValue = password,
                     label = "Password",
-                    isError = isPassWordError,
+                    isError = false,
                     onValueChange = { password = it },
                 )
                 PassWordField(
@@ -233,7 +239,13 @@ fun RegisterScreen(
                                 .show()
                             return@Button
                         }
-
+                        if (password != confirmPassword) {
+                            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                            // Set the password error state to true
+                            isPassWordError = true
+                            return@Button
+                        }
+                        viewModel.saveUserDetails(fullName, if (role == StudentText) registrationNumber else "", phoneNumber, email, role)
                         viewModel.signUpUser(email, password)
                     },
                     shape = RoundedCornerShape(16),

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -35,7 +34,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    AttachmentApp(name = "AttachMentApp")
+                    AttachmentApp(name = "AttachmentApp")
                 }
             }
         }
@@ -48,9 +47,8 @@ fun AttachmentApp(name: String, modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.statusBarsPadding()
+        modifier = Modifier.statusBarsPadding(),
     ) {
-        CircularProgressIndicator()
         AuthNavGraph()
     }
 }

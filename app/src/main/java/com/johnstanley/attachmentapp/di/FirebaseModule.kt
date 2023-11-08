@@ -1,6 +1,7 @@
 package com.johnstanley.attachmentapp.di
 
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.johnstanley.attachmentapp.data.repository.AuthAuthRepositoryImpl
 import com.johnstanley.attachmentapp.data.repository.AuthRepository
@@ -16,4 +17,8 @@ class FirebaseModule {
     @Singleton
     @Provides
     fun provideAuthRepo(): AuthRepository = AuthAuthRepositoryImpl(auth = Firebase.auth)
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFireStore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 }

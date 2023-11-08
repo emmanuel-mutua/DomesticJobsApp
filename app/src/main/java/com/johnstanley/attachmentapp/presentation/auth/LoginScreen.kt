@@ -62,7 +62,7 @@ import kotlinx.coroutines.delay
 fun LoginScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel(),
-    userData: UserData,
+    authStateData: AuthStateData,
     onRegisterButtonClicked: () -> Unit,
     navigateToHome: () -> Unit,
 ) {

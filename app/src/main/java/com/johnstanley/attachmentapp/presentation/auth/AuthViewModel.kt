@@ -1,15 +1,13 @@
 package com.johnstanley.attachmentapp.presentation.auth
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.data.repository.AuthRepository
+import com.johnstanley.attachmentapp.utils.Contants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,13 +16,14 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val authRepo: AuthRepository,
 ) : ViewModel() {
-    private var _registerState = MutableStateFlow(UserData())
+    private var _registerState = MutableStateFlow(AuthStateData())
     val registerState = _registerState.asStateFlow()
     val isEmailVerified = authRepo.isEmailVerified()
     var authState = authRepo.getAuthState(viewModelScope)
     val currentUser = authRepo.currentUser
-    val email = _registerState.value.email
-    val password = _registerState.value.password
+    val currentUserId = currentUser?.uid.toString()
+    private var _studentData = MutableStateFlow(StudentData())
+    private var _staffData = MutableStateFlow(StaffData())
 
     private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.FirstLaunch)
     val signInResponse = _signInResponse.asStateFlow()
@@ -43,18 +42,6 @@ class AuthViewModel @Inject constructor(
 //    init {
 //        getErrorMessage()
 //    }
-
-    fun getErrorMessage() {
-        viewModelScope.launch {
-            authRepo.getErrorMessage().collectLatest { errorMessage ->
-                _registerState.update {
-                    it.copy(
-                        errorMsg = errorMessage,
-                    )
-                }
-            }
-        }
-    }
 
     fun signUpEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
@@ -84,19 +71,74 @@ class AuthViewModel @Inject constructor(
             )
         }
     }
+
+    fun saveUserDetails(
+        fullName: String,
+        registrationNumber: String,
+        phoneNumber: String,
+        email: String,
+        role: String,
+    ) {
+        if (role == Contants.StudentText) {
+            _studentData.update {
+                it.copy(
+                    fullName = fullName,
+                    registrationNumber = registrationNumber,
+                    phoneNumber = phoneNumber,
+                    email = email,
+                    role = role,
+                )
+            }
+            _registerState.update {
+                it.copy(
+                    role = role,
+                )
+            }
+        } else {
+            _staffData.update {
+                it.copy(
+                    fullName = fullName,
+                    phoneNumber = phoneNumber,
+                    email = email,
+                    role = role,
+                )
+            }
+            _registerState.update {
+                it.copy(
+                    role = role,
+                )
+            }
+        }
+    }
+
+    fun saveUserToDataBase() {
+        val role = _registerState.value.role
+        if (role == Contants.StudentText) {
+        } else {
+        }
+    }
 }
 
-data class UserData(
+data class AuthStateData(
     val isLoading: Boolean = false,
+    val role: String = "",
+    val isUserLoggedIn: Boolean = false,
+    val goToStudentHomeScreen: Boolean = true,
+)
+
+data class StudentData(
+    val uid: String = "",
     val fullName: String = "",
+    val email: String = "",
     val registrationNumber: String = "",
+    val phoneNumber: String = "",
+    val role: String = "",
+)
+
+data class StaffData(
+    val uid: String = "",
+    val fullName: String = "",
     val email: String = "",
     val phoneNumber: String = "",
     val role: String = "",
-    val password: String = "",
-    val confirmPassword: String = "",
-    val isUserLoggedIn: Boolean = false,
-    val goToStudentHomeScreen: Boolean = true,
-    val isPassWordError: Boolean = false,
-    val errorMsg: String = "",
 )

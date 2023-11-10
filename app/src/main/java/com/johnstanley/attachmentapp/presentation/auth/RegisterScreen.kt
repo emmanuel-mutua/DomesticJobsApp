@@ -48,14 +48,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
-import com.johnstanley.attachmentapp.presentation.components.MyToastMessage
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
 import com.johnstanley.attachmentapp.utils.Contants.StaffText
 import com.johnstanley.attachmentapp.utils.Contants.StudentText
 import com.stevdzasan.messagebar.ContentWithMessageBar
 import com.stevdzasan.messagebar.MessageBarState
-import com.stevdzasan.messagebar.rememberMessageBarState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -90,10 +88,14 @@ fun RegisterScreen(
             if (isSignedUp) {
                 LaunchedEffect(Unit) {
                     viewModel.saveUserToDataBase()
-                    Toast.makeText(context, "Account created, Please verify email", Toast.LENGTH_LONG)
+                    onSuccessRegistration()
+                    Toast.makeText(
+                        context,
+                        "Account created, Please verify email",
+                        Toast.LENGTH_LONG,
+                    )
                         .show()
                 }
-                onSuccessRegistration()
             }
         }
 
@@ -155,7 +157,7 @@ fun RegisterScreen(
                                 selected = roleOption == selectedRole,
                                 onClick = {
                                     selectedRole = roleOption
-                                    viewModel.setRole(roleOption)
+                                    viewModel.setRole(selectedRole)
                                 },
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -177,7 +179,10 @@ fun RegisterScreen(
                     MyOutlinedTextField(
                         value = registrationNumber,
                         placeHolder = "Registration Number",
-                        onValueChange = { registrationNumber = it },
+                        onValueChange = {
+                            registrationNumber = it
+                            viewModel.setRegNo(it)
+                        },
                         isError = false,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
@@ -218,7 +223,10 @@ fun RegisterScreen(
                     passwordValue = confirmPassword,
                     label = "ConfirmPassword",
                     isError = isPassWordError,
-                    onValueChange = { confirmPassword = it },
+                    onValueChange = {
+                        confirmPassword = it
+                        isPassWordError = confirmPassword != password
+                    },
                 )
 
 //            if (passwordState.error != "") {
@@ -234,18 +242,22 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
                     onClick = {
-                        if (role.isEmpty() && fullName.isEmpty() && phoneNumber.isEmpty() && email.isEmpty() && password.isEmpty()) {
+                        if (selectedRole == "" || fullName == "" || phoneNumber == "" || email == "" || (registrationNumber == "" && selectedRole == StudentText)) {
                             Toast.makeText(context, "All fields required", Toast.LENGTH_SHORT)
                                 .show()
                             return@Button
                         }
-                        if (password != confirmPassword) {
-                            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
-                            // Set the password error state to true
-                            isPassWordError = true
+                        if (isPassWordError) {
+                            Toast.makeText(context, "Password Mismatch", Toast.LENGTH_SHORT)
+                                .show()
                             return@Button
                         }
-                        viewModel.saveUserDetails(fullName, if (role == StudentText) registrationNumber else "", phoneNumber, email, role)
+                        viewModel.saveUserDetails(
+                            fullName,
+                            if (role == StudentText) registrationNumber else "",
+                            phoneNumber,
+                            email,
+                        )
                         viewModel.signUpUser(email, password)
                     },
                     shape = RoundedCornerShape(16),

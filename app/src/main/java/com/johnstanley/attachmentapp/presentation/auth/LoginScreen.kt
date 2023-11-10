@@ -3,16 +3,13 @@ package com.johnstanley.attachmentapp.presentation.auth
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -21,7 +18,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -78,6 +74,7 @@ fun LoginScreen(
     val context = LocalContext.current
     val roles = listOf("Staff", "Student")
     val signInResponse by viewModel.signInResponse.collectAsState()
+    val isEmailVerified = viewModel.isEmailVerified
     when (signInResponse) {
         Response.Loading -> {
             isLoading = true
@@ -88,7 +85,11 @@ fun LoginScreen(
             var isSignedIn = (signInResponse as Response.Success<Boolean>).data
             if (isSignedIn) {
                 isLoading = false
-                isSignedIn = true
+                if (isEmailVerified) {
+                    navigateToHome()
+                } else {
+                    Toast.makeText(context, "Email not verified", Toast.LENGTH_SHORT).show()
+                }
             } else {
                 LaunchedEffect(Unit) {
                     Toast.makeText(context, "Invalid Credentials", Toast.LENGTH_SHORT).show()
@@ -153,30 +154,30 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.height(50.dp))
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 10.dp, start = 50.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("Select:")
-                    roles.forEach { roleOption ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(
-                                selected = roleOption == selectedRole,
-                                onClick = {
-                                    selectedRole = roleOption
-                                    viewModel.setRole(roleOption)
-                                },
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(roleOption)
-                        }
-                    }
-                }
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 10.dp, start = 50.dp),
+//                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+//                    verticalAlignment = Alignment.CenterVertically,
+//                ) {
+//                    Text("Select:")
+//                    roles.forEach { roleOption ->
+//                        Row(
+//                            verticalAlignment = Alignment.CenterVertically,
+//                        ) {
+//                            RadioButton(
+//                                selected = roleOption == selectedRole,
+//                                onClick = {
+//                                    selectedRole = roleOption
+//                                    viewModel.setRole(selectedRole)
+//                                },
+//                            )
+//                            Spacer(modifier = Modifier.width(4.dp))
+//                            Text(roleOption)
+//                        }
+//                    }
+//                }
 
                 MyOutlinedTextField(
                     value = email,
@@ -210,7 +211,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(50.dp))
                 Button(
                     onClick = {
-                        if (email.isEmpty() && password.isEmpty()) {
+                        if (email == "" || password == "") {
                             Toast.makeText(context, "All fields required", Toast.LENGTH_SHORT)
                                 .show()
                             return@Button
@@ -237,7 +238,7 @@ fun LoginScreen(
                     }
                 }
                 TextButton(
-                    onClick = { navController.navigate(AuthNavigation.Register.route) },
+                    onClick = onRegisterButtonClicked,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(

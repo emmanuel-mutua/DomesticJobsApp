@@ -16,17 +16,17 @@ import com.stevdzasan.messagebar.rememberMessageBarState
 fun AuthNavGraph() {
     val navController = rememberNavController()
     val viewModel: AuthViewModel = hiltViewModel()
-    val startDestination = if (viewModel.currentUser == null) {
+    val startDestination = if (viewModel.currentUser == null && !viewModel.isEmailVerified) {
         AuthNavigation.Login.route
     } else {
-        AuthNavigation.Login.route
+        AuthNavigation.Home.route
     }
-    val userData = viewModel.registerState.collectAsState().value
+    val registerState = viewModel.registerState.collectAsState().value
     NavHost(navController = navController, startDestination = startDestination) {
         loginScreen(
-            navController= navController,
+            navController = navController,
             viewModel = viewModel,
-            authStateData = userData,
+            authStateData = registerState,
             navigateToRegister = {
                 navController.navigate(AuthNavigation.Register.route)
                 navController.popBackStack()
@@ -39,12 +39,12 @@ fun AuthNavGraph() {
             navController.popBackStack()
             navController.navigate(AuthNavigation.Login.route)
         })
-        homeScreen(isStudentLoggedIn = userData.goToStudentHomeScreen)
+        homeScreen(viewModel = viewModel)
     }
 }
 
 fun NavGraphBuilder.loginScreen(
-    navController : NavController,
+    navController: NavController,
     viewModel: AuthViewModel,
     authStateData: AuthStateData,
     navigateToRegister: () -> Unit,
@@ -81,8 +81,9 @@ fun NavGraphBuilder.registerScreen(
     }
 }
 
-fun NavGraphBuilder.homeScreen(isStudentLoggedIn: Boolean) {
+fun NavGraphBuilder.homeScreen(viewModel: AuthViewModel) {
     composable(AuthNavigation.Home.route) {
+        val isStudentLoggedIn = viewModel.isStudentLoggedIn()
         if (isStudentLoggedIn) {
             StudentHomeScreen()
         } else {

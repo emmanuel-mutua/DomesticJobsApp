@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.data.repository.AuthRepository
+import com.johnstanley.attachmentapp.data.repository.StorageService
 import com.johnstanley.attachmentapp.utils.Contants
+import com.johnstanley.attachmentapp.utils.Contants.StudentText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepo: AuthRepository,
+    private val storageService: StorageService,
 ) : ViewModel() {
     private var _registerState = MutableStateFlow(AuthStateData())
     val registerState = _registerState.asStateFlow()
@@ -77,8 +80,8 @@ class AuthViewModel @Inject constructor(
         registrationNumber: String,
         phoneNumber: String,
         email: String,
-        role: String,
     ) {
+        val role = _registerState.value.role
         if (role == Contants.StudentText) {
             _studentData.update {
                 it.copy(
@@ -86,11 +89,6 @@ class AuthViewModel @Inject constructor(
                     registrationNumber = registrationNumber,
                     phoneNumber = phoneNumber,
                     email = email,
-                    role = role,
-                )
-            }
-            _registerState.update {
-                it.copy(
                     role = role,
                 )
             }
@@ -103,19 +101,83 @@ class AuthViewModel @Inject constructor(
                     role = role,
                 )
             }
-            _registerState.update {
-                it.copy(
-                    role = role,
-                )
-            }
         }
     }
 
     fun saveUserToDataBase() {
         val role = _registerState.value.role
         if (role == Contants.StudentText) {
+            viewModelScope.launch {
+                _studentData.update {
+                    it.copy(
+                        uid = currentUserId,
+                    )
+                }
+                val response = storageService.addStudent(_studentData.value)
+                if (response) {
+                }
+            }
         } else {
+            viewModelScope.launch {
+                _staffData.update {
+                    it.copy(
+                        uid = currentUserId,
+                    )
+                }
+                val response = storageService.addStaff(_staffData.value)
+                if (response) {
+                }
+            }
         }
+    }
+
+    fun setRegNo(registrationNumber: String) {
+        _studentData.update {
+            it.copy(
+                registrationNumber = registrationNumber,
+            )
+        }
+    }
+
+    fun isStudentLoggedIn(): Boolean {
+        viewModelScope.launch {
+            storageService.getUserData(
+                uid = currentUserId,
+                onSuccess = { document ->
+                    val role = document.getString("role").orEmpty()
+                    _registerState.update {
+                        it.copy(
+                            role = role,
+                        )
+                    }
+                    val fullName = document.getString("fullName") ?: ""
+                    val email = document.getString("email") ?: ""
+                    val phoneNumber = document.getString("phoneNumber") ?: ""
+                    if (role == StudentText) {
+                        val registrationNumber = document.getString("registrationNumber") ?: ""
+                        _studentData.update {
+                            it.copy(
+                                fullName = fullName,
+                                email = email,
+                                registrationNumber = registrationNumber,
+                                phoneNumber = phoneNumber,
+                                role = role,
+                            )
+                        }
+                    } else {
+                        _staffData.update {
+                            it.copy(
+                                fullName = fullName,
+                                email = email,
+                                phoneNumber = phoneNumber,
+                                role = role,
+                            )
+                        }
+                    }
+                },
+            )
+        }
+        return _registerState.value.role == StudentText
     }
 }
 

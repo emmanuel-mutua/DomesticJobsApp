@@ -254,7 +254,7 @@ fun RegisterScreen(
                         }
                         viewModel.saveUserDetails(
                             fullName,
-                            if (role == StudentText) registrationNumber else "",
+                            if (selectedRole == StudentText) registrationNumber else "",
                             phoneNumber,
                             email,
                         )

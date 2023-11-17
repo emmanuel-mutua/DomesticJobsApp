@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.johnstanley.attachmentapp.presentation.auth.AuthNavGraph
+import com.johnstanley.attachmentapp.presentation.auth.AuthViewModel
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,6 +31,7 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             AttachmentAppTheme {
+                val authViewModel: AuthViewModel = hiltViewModel()
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),

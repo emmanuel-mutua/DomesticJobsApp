@@ -1,15 +1,23 @@
 package com.johnstanley.attachmentapp.presentation.auth
 
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.data.repository.AuthRepository
 import com.johnstanley.attachmentapp.data.repository.StorageService
 import com.johnstanley.attachmentapp.utils.Contants
 import com.johnstanley.attachmentapp.utils.Contants.StudentText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,12 +29,26 @@ class AuthViewModel @Inject constructor(
 ) : ViewModel() {
     private var _registerState = MutableStateFlow(AuthStateData())
     val registerState = _registerState.asStateFlow()
-    val isEmailVerified = authRepo.isEmailVerified()
-    var authState = authRepo.getAuthState(viewModelScope)
-    val currentUser = authRepo.currentUser
-    val currentUserId = currentUser?.uid.toString()
+    val isEmailVerified get() = authRepo.currentUser?.isEmailVerified ?: false
+    val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
+    private val currentUserId = currentUser?.uid!!
     private var _studentData = MutableStateFlow(StudentData())
     private var _staffData = MutableStateFlow(StaffData())
+
+    init {
+        viewModelScope.launch {
+            authRepo.isEmailVerified().collectLatest { isEmailVerified ->
+                _registerState.update {
+                    it.copy(
+                        isEmailVerified = isEmailVerified,
+                    )
+                }
+            }
+        }
+        if (currentUser != null) {
+            getUserData()
+        }
+    }
 
     private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.FirstLaunch)
     val signInResponse = _signInResponse.asStateFlow()
@@ -49,7 +71,10 @@ class AuthViewModel @Inject constructor(
     fun signUpEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
             _signUpResponse.value = Response.Loading
-            _signUpResponse.value = authRepo.signUpEmailAndPassword(email, password)
+            val response = authRepo.signUpEmailAndPassword(email, password)
+            delay(3000)
+            _registerState
+            _signUpResponse.value = response
         }
     }
 
@@ -108,6 +133,7 @@ class AuthViewModel @Inject constructor(
         val role = _registerState.value.role
         if (role == Contants.StudentText) {
             viewModelScope.launch {
+                delay(1000)
                 _studentData.update {
                     it.copy(
                         uid = currentUserId,
@@ -139,12 +165,20 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun isStudentLoggedIn(): Boolean {
+    fun getRole() = getUserData()
+
+    fun getUserData() {
+        var role by mutableStateOf("")
+        _registerState.update {
+            it.copy(
+                isLoading = true,
+            )
+        }
         viewModelScope.launch {
             storageService.getUserData(
                 uid = currentUserId,
                 onSuccess = { document ->
-                    val role = document.getString("role").orEmpty()
+                    role = document.getString("role").orEmpty()
                     _registerState.update {
                         it.copy(
                             role = role,
@@ -153,6 +187,7 @@ class AuthViewModel @Inject constructor(
                     val fullName = document.getString("fullName") ?: ""
                     val email = document.getString("email") ?: ""
                     val phoneNumber = document.getString("phoneNumber") ?: ""
+
                     if (role == StudentText) {
                         val registrationNumber = document.getString("registrationNumber") ?: ""
                         _studentData.update {
@@ -164,6 +199,10 @@ class AuthViewModel @Inject constructor(
                                 role = role,
                             )
                         }
+                        Log.d("Vm", _registerState.value.role)
+                        Log.d("Vm", _studentData.value.phoneNumber)
+                        Log.d("Vm", _studentData.value.registrationNumber)
+                        Log.d("Vm", _studentData.value.email)
                     } else {
                         _staffData.update {
                             it.copy(
@@ -177,13 +216,24 @@ class AuthViewModel @Inject constructor(
                 },
             )
         }
-        return _registerState.value.role == StudentText
+        _registerState.update {
+            it.copy(
+                isLoading = false,
+            )
+        }
+    }
+
+    fun reloadUser() {
+        viewModelScope.launch {
+            authRepo.reloadFirebaseUser()
+        }
     }
 }
 
 data class AuthStateData(
     val isLoading: Boolean = false,
     val role: String = "",
+    val isEmailVerified: Boolean = false,
     val isUserLoggedIn: Boolean = false,
     val goToStudentHomeScreen: Boolean = true,
 )
@@ -195,6 +245,7 @@ data class StudentData(
     val registrationNumber: String = "",
     val phoneNumber: String = "",
     val role: String = "",
+    val addedAttachmentDetails: Boolean = false,
 )
 
 data class StaffData(

@@ -1,7 +1,10 @@
 package com.johnstanley.attachmentapp.presentation.auth
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -10,13 +13,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.johnstanley.attachmentapp.presentation.staff.home.StaffHomeScreen
 import com.johnstanley.attachmentapp.presentation.student.home.StudentHomeScreen
+import com.johnstanley.attachmentapp.utils.Contants.StaffText
+import com.johnstanley.attachmentapp.utils.Contants.StudentText
 import com.stevdzasan.messagebar.rememberMessageBarState
 
 @Composable
 fun AuthNavGraph() {
     val navController = rememberNavController()
     val viewModel: AuthViewModel = hiltViewModel()
-    val startDestination = if (viewModel.currentUser == null && !viewModel.isEmailVerified) {
+    val isEmailVerified = viewModel.currentUser?.isEmailVerified ?: false
+    val currentUser = viewModel.currentUser
+    val startDestination = if (currentUser == null || !isEmailVerified) {
         AuthNavigation.Login.route
     } else {
         AuthNavigation.Home.route
@@ -28,18 +35,18 @@ fun AuthNavGraph() {
             viewModel = viewModel,
             authStateData = registerState,
             navigateToRegister = {
-                navController.navigate(AuthNavigation.Register.route)
-                navController.popBackStack()
+                navController.navigateWithPop(AuthNavigation.Register.route)
             },
             navigateToHome = {
-                navController.navigate(AuthNavigation.Home.route)
+                navController.navigateWithPop(AuthNavigation.Home.route)
             },
         )
         registerScreen(viewModel = viewModel, navigateToLogin = {
-            navController.popBackStack()
-            navController.navigate(AuthNavigation.Login.route)
+            navController.navigateWithPop(AuthNavigation.Login.route)
         })
-        homeScreen(viewModel = viewModel)
+        homeScreen(viewModel = viewModel, navigateToLogin = {
+            navController.navigateWithPop(AuthNavigation.Login.route)
+        })
     }
 }
 
@@ -81,14 +88,27 @@ fun NavGraphBuilder.registerScreen(
     }
 }
 
-fun NavGraphBuilder.homeScreen(viewModel: AuthViewModel) {
+fun NavGraphBuilder.homeScreen(viewModel: AuthViewModel, navigateToLogin: () -> Unit) {
     composable(AuthNavigation.Home.route) {
-        val isStudentLoggedIn = viewModel.isStudentLoggedIn()
-        if (isStudentLoggedIn) {
+        val role = viewModel.registerState.collectAsState().value.role
+        Log.d("Login", role)
+        if (role == StudentText) {
             StudentHomeScreen()
-        } else {
+        } else if (role == StaffText) {
             StaffHomeScreen()
+        } else {
+            navigateToLogin()
         }
+    }
+}
+
+fun NavController.navigateWithPop(route: String) {
+    this.navigate(route) {
+        popUpTo(AuthNavigation.Login.route) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
     }
 }
 

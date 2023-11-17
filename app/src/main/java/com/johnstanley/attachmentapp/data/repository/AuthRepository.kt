@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -33,7 +34,8 @@ interface AuthRepository {
     fun signOut(): SignOutResponse
     fun getAuthState(viewModelScope: CoroutineScope): AuthStateResponse
     suspend fun sendEmailVerification(): SendEmailVerificationResponse
-    fun isEmailVerified(): IsEmailVerifiedResponse
+    fun isEmailVerified(): Flow<Boolean>
+    suspend fun reloadFirebaseUser()
 }
 
 class AuthAuthRepositoryImpl @Inject constructor(
@@ -133,7 +135,17 @@ class AuthAuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun isEmailVerified(): IsEmailVerifiedResponse {
-        return auth.currentUser?.isEmailVerified ?: false
+    override fun isEmailVerified(): Flow<Boolean> = callbackFlow {
+        val authStateListener = AuthStateListener { auth ->
+            trySend(auth.currentUser?.isEmailVerified!!)
+        }
+        auth.addAuthStateListener(authStateListener)
+        awaitClose {
+            auth.removeAuthStateListener(authStateListener)
+        }
+    }
+
+    override suspend fun reloadFirebaseUser() {
+        auth.currentUser?.reload()?.await()
     }
 }

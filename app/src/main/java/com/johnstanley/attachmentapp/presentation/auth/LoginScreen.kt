@@ -72,7 +72,6 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(role) }
     val context = LocalContext.current
-    val roles = listOf("Staff", "Student")
     val signInResponse by viewModel.signInResponse.collectAsState()
     val isEmailVerified = viewModel.isEmailVerified
     when (signInResponse) {
@@ -89,6 +88,7 @@ fun LoginScreen(
                     navigateToHome()
                 } else {
                     Toast.makeText(context, "Email not verified", Toast.LENGTH_SHORT).show()
+                    viewModel.reloadUser()
                 }
             } else {
                 LaunchedEffect(Unit) {
@@ -121,7 +121,7 @@ fun LoginScreen(
         ContentWithMessageBar(messageBarState = messageBarState) {
             LaunchedEffect(Unit) {
                 if (isSignedIn) {
-                    if (!viewModel.isEmailVerified) {
+                    if (!isEmailVerified) {
                         MyToastMessage(context = context, message = "Please verify email")
                     } else {
                         MyToastMessage(context = context, message = "Successfully Authenticated")
@@ -238,7 +238,9 @@ fun LoginScreen(
                     }
                 }
                 TextButton(
-                    onClick = onRegisterButtonClicked,
+                    onClick = {
+                        navController.navigateWithPop(AuthNavigation.Register.route)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(

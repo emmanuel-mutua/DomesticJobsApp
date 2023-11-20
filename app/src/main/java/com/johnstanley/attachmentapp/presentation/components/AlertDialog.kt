@@ -31,7 +31,7 @@ fun DisplayAlertDialog(
             text = {
                 Text(
                     text = message,
-                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
                     fontWeight = FontWeight.Light,
                 )
             },

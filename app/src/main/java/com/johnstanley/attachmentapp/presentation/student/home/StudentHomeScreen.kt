@@ -101,11 +101,12 @@ fun NavGraphBuilder.account(
         var dialogOpened by remember { mutableStateOf(false) }
         ProfileScreen(
             onSignOutClicked = {
+                dialogOpened = true
             },
         )
         DisplayAlertDialog(
             title = "Sign Out",
-            message = "Are you sure you want to sign out with Google Account?",
+            message = "Are you sure you want to sign out?",
             dialogOpened = dialogOpened,
             onCloseDialog = {
                 dialogOpened = false

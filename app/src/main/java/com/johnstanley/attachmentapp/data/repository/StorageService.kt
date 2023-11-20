@@ -47,12 +47,15 @@ class StorageServiceImpl(
         }
     }
 
-    override suspend fun getUserData(uid: String, onSuccess: (DocumentSnapshot) -> Unit) {
+    override suspend fun getUserData(
+        uid: String,
+        onSuccess: (DocumentSnapshot) -> Unit,
+    ) {
         try {
             db.collection("users").document(uid).get()
                 .addOnSuccessListener { document ->
                     onSuccess(document)
-                }
+                }.await()
         } catch (e: Exception) {
             Log.d("FireStore", e.localizedMessage)
         }

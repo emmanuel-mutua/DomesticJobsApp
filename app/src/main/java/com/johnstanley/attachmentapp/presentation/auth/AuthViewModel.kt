@@ -13,7 +13,6 @@ import com.johnstanley.attachmentapp.data.repository.StorageService
 import com.johnstanley.attachmentapp.utils.Contants
 import com.johnstanley.attachmentapp.utils.Contants.StudentText
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -127,10 +126,10 @@ class AuthViewModel @Inject constructor(
         val role = _registerState.value.role
         if (role == Contants.StudentText) {
             viewModelScope.launch {
-                delay(1000)
+                delay(2000)
                 _studentData.update {
                     it.copy(
-                        uid = currentUserId,
+                        uid = FirebaseAuth.getInstance()?.currentUser?.uid ?: "",
                     )
                 }
                 val response = storageService.addStudent(_studentData.value)
@@ -141,7 +140,7 @@ class AuthViewModel @Inject constructor(
             viewModelScope.launch {
                 _staffData.update {
                     it.copy(
-                        uid = currentUserId,
+                        uid = FirebaseAuth.getInstance()?.currentUser?.uid ?: "",
                     )
                 }
                 val response = storageService.addStaff(_staffData.value)
@@ -165,14 +164,16 @@ class AuthViewModel @Inject constructor(
                 isLoading = true,
             )
         }
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             storageService.getUserData(
-                collection = "users",
-                uid = currentUserId,
+                uid = FirebaseAuth.getInstance()?.currentUser?.uid ?: "",
                 onSuccess = { document ->
-                    val userRole = document.getString("role") ?: "Student"
-                    val phoneNumber = document.getString("phoneNumber") ?: "07..."
+                    Log.d("VM", document.id)
+                    Log.d("VM", currentUserId)
+                    val userRole = document.getString("role") ?: ""
+                    val phoneNumber = document.getString("phoneNumber") ?: ""
                     Log.d("VM", phoneNumber)
+                    Log.d("VM", userRole)
                     _registerState.update {
                         it.copy(
                             role = userRole,

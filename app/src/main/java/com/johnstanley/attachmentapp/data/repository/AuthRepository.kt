@@ -137,7 +137,7 @@ class AuthAuthRepositoryImpl @Inject constructor(
 
     override fun isEmailVerified(): Flow<Boolean> = callbackFlow {
         val authStateListener = AuthStateListener { auth ->
-            trySend(auth.currentUser?.isEmailVerified!!)
+            trySend(auth.currentUser?.isEmailVerified?:false)
         }
         auth.addAuthStateListener(authStateListener)
         awaitClose {

@@ -46,12 +46,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
-import com.johnstanley.attachmentapp.presentation.components.MyToastMessage
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
+import com.johnstanley.attachmentapp.utils.Contants
 import com.stevdzasan.messagebar.ContentWithMessageBar
 import com.stevdzasan.messagebar.rememberMessageBarState
-import kotlinx.coroutines.delay
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -59,7 +58,7 @@ fun LoginScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel(),
     authStateData: AuthStateData,
-    onRegisterButtonClicked: () -> Unit,
+    navigateToRegister: () -> Unit,
     navigateToHome: () -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -68,6 +67,7 @@ fun LoginScreen(
     var isError by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    val roles = listOf(Contants.StaffText, Contants.StudentText)
     var role by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(role) }
@@ -109,7 +109,9 @@ fun LoginScreen(
             }
         }
 
-        else -> {}
+        else -> {
+            isLoading = false
+        }
     }
 
     Scaffold(
@@ -119,17 +121,6 @@ fun LoginScreen(
     ) {
         val messageBarState = rememberMessageBarState()
         ContentWithMessageBar(messageBarState = messageBarState) {
-            LaunchedEffect(Unit) {
-                if (isSignedIn) {
-                    if (!isEmailVerified) {
-                        MyToastMessage(context = context, message = "Please verify email")
-                    } else {
-                        MyToastMessage(context = context, message = "Successfully Authenticated")
-                        delay(1000)
-                        navigateToHome()
-                    }
-                }
-            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -217,6 +208,7 @@ fun LoginScreen(
                             return@Button
                         }
                         viewModel.signInEmailAndPassword(email, password)
+                        isLoading = false
                     },
                     shape = RoundedCornerShape(16),
                     colors = ButtonDefaults.buttonColors(
@@ -239,7 +231,7 @@ fun LoginScreen(
                 }
                 TextButton(
                     onClick = {
-                        navController.navigateWithPop(AuthNavigation.Register.route)
+                        navigateToRegister()
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {

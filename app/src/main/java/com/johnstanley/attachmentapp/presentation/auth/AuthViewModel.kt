@@ -2,7 +2,6 @@ package com.johnstanley.attachmentapp.presentation.auth
 
 import android.util.Log
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +13,7 @@ import com.johnstanley.attachmentapp.data.repository.StorageService
 import com.johnstanley.attachmentapp.utils.Contants
 import com.johnstanley.attachmentapp.utils.Contants.StudentText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,10 +28,12 @@ class AuthViewModel @Inject constructor(
     private val storageService: StorageService,
 ) : ViewModel() {
     private var _registerState = MutableStateFlow(AuthStateData())
+    private var _loggedInResponse = MutableStateFlow(LoggedInUser())
+    val loggedInResponse = _loggedInResponse.asStateFlow()
     val registerState = _registerState.asStateFlow()
     val isEmailVerified get() = authRepo.currentUser?.isEmailVerified ?: false
     val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
-    private val currentUserId = currentUser?.uid!!
+    private val currentUserId = currentUser?.uid ?: ""
     private var _studentData = MutableStateFlow(StudentData())
     private var _staffData = MutableStateFlow(StaffData())
 
@@ -44,9 +46,6 @@ class AuthViewModel @Inject constructor(
                     )
                 }
             }
-        }
-        if (currentUser != null) {
-            getUserData()
         }
     }
 
@@ -64,16 +63,11 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-//    init {
-//        getErrorMessage()
-//    }
-
     fun signUpEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
             _signUpResponse.value = Response.Loading
             val response = authRepo.signUpEmailAndPassword(email, password)
             delay(3000)
-            _registerState
             _signUpResponse.value = response
         }
     }
@@ -107,7 +101,7 @@ class AuthViewModel @Inject constructor(
         email: String,
     ) {
         val role = _registerState.value.role
-        if (role == Contants.StudentText) {
+        if (role == StudentText) {
             _studentData.update {
                 it.copy(
                     fullName = fullName,
@@ -165,60 +159,28 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun getRole() = getUserData()
-
-    fun getUserData() {
-        var role by mutableStateOf("")
+    fun getRoleFromUserData(onDataLoaded: (String) -> Unit) {
         _registerState.update {
             it.copy(
                 isLoading = true,
             )
         }
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             storageService.getUserData(
+                collection = "users",
                 uid = currentUserId,
                 onSuccess = { document ->
-                    role = document.getString("role").orEmpty()
+                    val userRole = document.getString("role") ?: "Student"
+                    val phoneNumber = document.getString("phoneNumber") ?: "07..."
+                    Log.d("VM", phoneNumber)
                     _registerState.update {
                         it.copy(
-                            role = role,
+                            role = userRole,
+                            isLoading = false,
                         )
                     }
-                    val fullName = document.getString("fullName") ?: ""
-                    val email = document.getString("email") ?: ""
-                    val phoneNumber = document.getString("phoneNumber") ?: ""
-
-                    if (role == StudentText) {
-                        val registrationNumber = document.getString("registrationNumber") ?: ""
-                        _studentData.update {
-                            it.copy(
-                                fullName = fullName,
-                                email = email,
-                                registrationNumber = registrationNumber,
-                                phoneNumber = phoneNumber,
-                                role = role,
-                            )
-                        }
-                        Log.d("Vm", _registerState.value.role)
-                        Log.d("Vm", _studentData.value.phoneNumber)
-                        Log.d("Vm", _studentData.value.registrationNumber)
-                        Log.d("Vm", _studentData.value.email)
-                    } else {
-                        _staffData.update {
-                            it.copy(
-                                fullName = fullName,
-                                email = email,
-                                phoneNumber = phoneNumber,
-                                role = role,
-                            )
-                        }
-                    }
+                    onDataLoaded(userRole)
                 },
-            )
-        }
-        _registerState.update {
-            it.copy(
-                isLoading = false,
             )
         }
     }
@@ -234,8 +196,6 @@ data class AuthStateData(
     val isLoading: Boolean = false,
     val role: String = "",
     val isEmailVerified: Boolean = false,
-    val isUserLoggedIn: Boolean = false,
-    val goToStudentHomeScreen: Boolean = true,
 )
 
 data class StudentData(

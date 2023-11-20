@@ -18,7 +18,7 @@ sealed class UserData {
 interface StorageService {
     suspend fun addStudent(user: StudentData): Boolean
     suspend fun addStaff(user: StaffData): Boolean
-    suspend fun getUserData(uid: String, onSuccess: (DocumentSnapshot) -> Unit)
+    suspend fun getUserData(uid: String, collection: String, onSuccess: (DocumentSnapshot) -> Unit)
 }
 
 class StorageServiceImpl(
@@ -47,12 +47,16 @@ class StorageServiceImpl(
         }
     }
 
-    override suspend fun getUserData(uid: String, onSuccess: (DocumentSnapshot) -> Unit) {
+    override suspend fun getUserData(
+        uid: String,
+        collection: String,
+        onSuccess: (DocumentSnapshot) -> Unit,
+    ) {
         try {
-            db.collection("users").document(uid).get()
+            db.collection(collection).document(uid).get()
                 .addOnSuccessListener { document ->
                     onSuccess(document)
-                }
+                }.await()
         } catch (e: Exception) {
             Log.d("FireStore", e.localizedMessage)
         }

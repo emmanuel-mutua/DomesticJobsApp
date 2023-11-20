@@ -30,7 +30,12 @@ import kotlinx.coroutines.launch
 fun AuthNavGraph() {
     val navController = rememberNavController()
     val viewModel: AuthViewModel = hiltViewModel()
-    val startDestination = AuthScreen.Login.route
+    val startDestination =
+        if (viewModel.currentUser != null && viewModel.isEmailVerified) {
+            AuthScreen.Home.route
+        } else {
+            AuthScreen.Login.route
+        }
     val registerState = viewModel.registerState.collectAsState().value
     NavHost(navController = navController, startDestination = startDestination) {
         loginScreen(
@@ -60,7 +65,11 @@ fun AuthNavGraph() {
             },
 
         )
-        studentHomeScreen()
+        studentHomeScreen(
+            navigateToLogin = {
+                navController.navigate(AuthScreen.Login.route)
+            }
+        )
         staffHomeScreen()
     }
 }
@@ -138,9 +147,11 @@ fun NavGraphBuilder.homeScreen(
     }
 }
 
-fun NavGraphBuilder.studentHomeScreen() {
+fun NavGraphBuilder.studentHomeScreen(navigateToLogin: () -> Unit) {
     composable(AuthScreen.StudentHome.route) {
-        StudentHomeScreen()
+        StudentHomeScreen(
+           navigateToLogin =  navigateToLogin
+        )
     }
 }
 

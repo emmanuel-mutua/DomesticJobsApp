@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.johnstanley.attachmentapp.presentation.student.components.HomeAppBar
 import com.johnstanley.attachmentapp.presentation.student.components.NavigationDrawer
-import kotlinx.coroutines.CoroutineScope
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable

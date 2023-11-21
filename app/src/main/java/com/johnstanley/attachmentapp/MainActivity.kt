@@ -12,13 +12,16 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import com.johnstanley.attachmentapp.presentation.auth.AuthNavGraph
+import com.johnstanley.attachmentapp.presentation.auth.AuthScreen
 import com.johnstanley.attachmentapp.presentation.auth.AuthViewModel
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,7 +55,21 @@ fun AttachmentApp(name: String, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.statusBarsPadding(),
     ) {
-        AuthNavGraph()
+        val navController = rememberNavController()
+        val authViewModel: AuthViewModel = hiltViewModel()
+        val startDestination =
+            if (authViewModel.currentUser != null && authViewModel.isEmailVerified) {
+                AuthScreen.Home.route
+            } else {
+                AuthScreen.Login.route
+            }
+        val registerState = authViewModel.registerState.collectAsState().value
+        AuthNavGraph(
+            startDestination = startDestination,
+            navController = navController,
+            authViewModel = authViewModel,
+            registerState = registerState,
+        )
     }
 }
 

@@ -19,16 +19,32 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.johnstanley.attachmentapp.data.database.ImageToDeleteDao
+import com.johnstanley.attachmentapp.data.database.ImageToUploadDao
 import com.johnstanley.attachmentapp.presentation.auth.AuthNavGraph
 import com.johnstanley.attachmentapp.presentation.auth.AuthScreen
 import com.johnstanley.attachmentapp.presentation.auth.AuthViewModel
 import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
+import com.johnstanley.attachmentapp.utils.retryDeletingImageFromFirebase
+import com.johnstanley.attachmentapp.utils.retryUploadingImageToFirebase
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var imageToUploadDao: ImageToUploadDao
+
+    @Inject
+    lateinit var imageToDeleteDao: ImageToDeleteDao
+    private var keepSplashOpened = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidThreeTen.init(this)
@@ -46,6 +62,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        cleanupCheck(
+            scope = lifecycleScope,
+            imageToUploadDao = imageToUploadDao,
+            imageToDeleteDao = imageToDeleteDao,
+        )
     }
 }
 
@@ -72,6 +93,37 @@ fun AttachmentApp(name: String, modifier: Modifier = Modifier) {
             authViewModel = authViewModel,
             registerState = registerState,
         )
+    }
+}
+
+private fun cleanupCheck(
+    scope: CoroutineScope,
+    imageToUploadDao: ImageToUploadDao,
+    imageToDeleteDao: ImageToDeleteDao,
+) {
+    scope.launch(Dispatchers.IO) {
+        val result = imageToUploadDao.getAllImages()
+        result.forEach { imageToUpload ->
+            retryUploadingImageToFirebase(
+                imageToUpload = imageToUpload,
+                onSuccess = {
+                    scope.launch(Dispatchers.IO) {
+                        imageToUploadDao.cleanupImage(imageId = imageToUpload.id)
+                    }
+                },
+            )
+        }
+        val result2 = imageToDeleteDao.getAllImages()
+        result2.forEach { imageToDelete ->
+            retryDeletingImageFromFirebase(
+                imageToDelete = imageToDelete,
+                onSuccess = {
+                    scope.launch(Dispatchers.IO) {
+                        imageToDeleteDao.cleanupImage(imageId = imageToDelete.id)
+                    }
+                },
+            )
+        }
     }
 }
 

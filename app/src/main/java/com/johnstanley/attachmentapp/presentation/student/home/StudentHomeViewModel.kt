@@ -8,6 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.johnstanley.attachmentapp.connectivity.ConnectivityObserver
 import com.johnstanley.attachmentapp.connectivity.NetworkConnectivityObserver
 import com.johnstanley.attachmentapp.data.model.RequestState
@@ -30,6 +32,9 @@ class StudentHomeViewModel @Inject constructor(
     private lateinit var allDiariesJob: Job
     private lateinit var filteredDiariesJob: Job
 
+    val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
+    private val currentUserId = currentUser?.uid ?: ""
+
     var attachmentLogs: MutableState<AttachmentLogs> = mutableStateOf(RequestState.Idle)
     private var network by mutableStateOf(ConnectivityObserver.Status.Unavailable)
     var dateIsSelected by mutableStateOf(false)
@@ -48,30 +53,30 @@ class StudentHomeViewModel @Inject constructor(
         dateIsSelected = zonedDateTime != null
         attachmentLogs.value = RequestState.Loading
         if (dateIsSelected && zonedDateTime != null) {
-            observeFilteredDiaries(zonedDateTime = zonedDateTime)
+            observeFilteredAttachmentLogs(zonedDateTime = zonedDateTime)
         } else {
-            observeAllDiaries()
+            observeAllAttachmentLogs()
         }
     }
 
     @OptIn(FlowPreview::class)
-    private fun observeAllDiaries() {
+    private fun observeAllAttachmentLogs() {
         allDiariesJob = viewModelScope.launch {
             if (::filteredDiariesJob.isInitialized) {
                 filteredDiariesJob.cancelAndJoin()
             }
-            FirebaseAttachmentLogRepo.getAllAttachmentLogs().debounce(2000).collect { result ->
+            FirebaseAttachmentLogRepo.getAllAttachmentLogs(studentId = currentUserId).debounce(2000).collect { result ->
                 attachmentLogs.value = result
             }
         }
     }
 
-    private fun observeFilteredDiaries(zonedDateTime: ZonedDateTime) {
+    private fun observeFilteredAttachmentLogs(zonedDateTime: ZonedDateTime) {
         filteredDiariesJob = viewModelScope.launch {
             if (::allDiariesJob.isInitialized) {
                 allDiariesJob.cancelAndJoin()
             }
-            FirebaseAttachmentLogRepo.getFilteredAttachmentLogs(zonedDateTime = zonedDateTime)
+            FirebaseAttachmentLogRepo.getFilteredAttachmentLogs(zonedDateTime = zonedDateTime, studentId = currentUserId)
                 .collect { result ->
                     attachmentLogs.value = result
                 }

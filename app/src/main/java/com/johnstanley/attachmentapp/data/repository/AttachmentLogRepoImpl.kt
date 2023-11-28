@@ -19,9 +19,11 @@ object FirebaseAttachmentLogRepo : AttachmentLogRepo {
     private val firestore = FirebaseFirestore.getInstance()
     private val attachmentLogsCollection = firestore.collection("attachmentLogs")
 
-    override suspend fun getAllAttachmentLogs(): Flow<AttachmentLogs> {
+    override suspend fun getAllAttachmentLogs(studentId : String): Flow<AttachmentLogs> {
         return try {
-            val snapshot = attachmentLogsCollection.get().await()
+            val snapshot = attachmentLogsCollection
+                .whereEqualTo("studentId", studentId)
+                .get().await()
             val logs = snapshot.toObjects(AttachmentLog::class.java).groupBy {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     val timestampMillis = it.date
@@ -44,12 +46,13 @@ object FirebaseAttachmentLogRepo : AttachmentLogRepo {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun getFilteredAttachmentLogs(zonedDateTime: ZonedDateTime): Flow<AttachmentLogs> =
+    override suspend fun getFilteredAttachmentLogs(zonedDateTime: ZonedDateTime, studentId : String): Flow<AttachmentLogs> =
 
         try {
             // Implement the query based on your requirements
             // You can use whereEqualTo, whereGreaterThan, etc.
             val snapshot = attachmentLogsCollection
+                .whereEqualTo("studentId", studentId)
                 .whereGreaterThan(
                     "date",
                     Timestamp(zonedDateTime.toInstant().toEpochMilli(), 0).toDate(),

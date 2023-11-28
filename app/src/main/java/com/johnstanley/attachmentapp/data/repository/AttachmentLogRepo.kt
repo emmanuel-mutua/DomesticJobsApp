@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.Flow
 import java.time.ZonedDateTime
 
 interface AttachmentLogRepo {
-    suspend fun getAllAttachmentLogs(): Flow<AttachmentLogs>
-    suspend fun getFilteredAttachmentLogs(zonedDateTime: ZonedDateTime): Flow<AttachmentLogs>
+    suspend fun getAllAttachmentLogs(studentId : String): Flow<AttachmentLogs>
+    suspend fun getFilteredAttachmentLogs(zonedDateTime: ZonedDateTime, studentId: String): Flow<AttachmentLogs>
     fun getSelectedAttachmentLog(attachmentId: String): Flow<RequestState<AttachmentLog>>
     suspend fun insertAttachmentLog(attachmentLog: AttachmentLog): RequestState<AttachmentLog>
     suspend fun updateAttachmentLog(attachmentLog: AttachmentLog): RequestState<AttachmentLog>

@@ -1,6 +1,7 @@
 package com.johnstanley.attachmentapp
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -58,21 +59,21 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    AttachmentApp(name = "AttachmentApp")
+                    AttachmentApp(name = "AttachmentApp", activity = this)
                 }
             }
         }
-        cleanupCheck(
-            scope = lifecycleScope,
-            imageToUploadDao = imageToUploadDao,
-            imageToDeleteDao = imageToDeleteDao,
-        )
+//        cleanupCheck(
+//            scope = lifecycleScope,
+//            imageToUploadDao = imageToUploadDao,
+//            imageToDeleteDao = imageToDeleteDao,
+//        )
     }
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AttachmentApp(name: String, modifier: Modifier = Modifier) {
+fun AttachmentApp(name: String, modifier: Modifier = Modifier, activity : Activity) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -92,6 +93,7 @@ fun AttachmentApp(name: String, modifier: Modifier = Modifier) {
             navController = navController,
             authViewModel = authViewModel,
             registerState = registerState,
+            activity = activity
         )
     }
 }
@@ -127,10 +129,4 @@ private fun cleanupCheck(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AttachmentAppTheme {
-        AttachmentApp("Android")
-    }
-}
+

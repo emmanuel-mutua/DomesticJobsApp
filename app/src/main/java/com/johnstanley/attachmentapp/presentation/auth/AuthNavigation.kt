@@ -1,6 +1,7 @@
 package com.johnstanley.attachmentapp.presentation.auth
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,14 +29,14 @@ fun AuthNavGraph(
     navController: NavHostController,
     authViewModel: AuthViewModel,
     registerState: AuthStateData,
+    activity: Activity,
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
         loginScreen(
             registerState = registerState,
             viewModel = authViewModel,
             navigateToRegister = {
-                navController.popBackStack()
-                navController.navigate(AuthScreen.Register.route)
+               navController.navigateWithPop(AuthScreen.Register.route)
             },
             navigateToHome = {
                 navController.navigate(AuthScreen.Home.route) {
@@ -45,7 +48,7 @@ fun AuthNavGraph(
             },
         )
         registerScreen(viewModel = authViewModel, navigateToLogin = {
-            navController.popBackStack()
+            navController.navigateWithPop(AuthScreen.Login.route)
         })
         homeScreen(
             registerState = registerState,
@@ -66,8 +69,10 @@ fun AuthNavGraph(
         )
         studentHomeScreen(
             navigateToLogin = {
-                navController.popBackStack()
-                navController.navigate(AuthScreen.Login.route)
+                activity.finish()
+
+//                navController.popBackStack()
+//                navController.navigate(AuthScreen.Login.route)
             },
         )
         staffHomeScreen()
@@ -154,5 +159,18 @@ fun NavGraphBuilder.studentHomeScreen(navigateToLogin: () -> Unit) {
 fun NavGraphBuilder.staffHomeScreen() {
     composable(AuthScreen.StaffHome.route) {
         StaffHomeScreen()
+    }
+}
+
+fun NavController.navigateWithPop(route: String) {
+    navigate(route) {
+        // Pop up to the start destination of the graph to
+        // avoid building up a large stack of destinations
+        // on the back stack as users select items
+        popUpTo(graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
     }
 }

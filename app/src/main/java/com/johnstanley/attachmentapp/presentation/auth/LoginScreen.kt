@@ -163,7 +163,9 @@ fun LoginScreen(
                         }
                         viewModel.signInEmailAndPassword(email, password) {
                             if (registerState.isSignedIn) {
-                                navigateToHome
+                                Toast.makeText(context, registerState.message, Toast.LENGTH_SHORT)
+                                    .show()
+                                navigateToHome()
                             } else {
                                 Toast.makeText(context, registerState.message, Toast.LENGTH_SHORT)
                                     .show()

@@ -15,13 +15,20 @@ sealed class StudentHomeDestinations(
     )
 
     object Add : StudentHomeDestinations(
-        route = "add_log?$ADD_SCREEN_ARGUMENT_KEY=" + "{$ADD_SCREEN_ARGUMENT_KEY}",
+        route = "add_log",
         label = "Add Log",
+        icon = R.drawable.baseline_add,
+    )
+
+    object Update : StudentHomeDestinations(
+        route = "update_log?$ADD_SCREEN_ARGUMENT_KEY=" + "{$ADD_SCREEN_ARGUMENT_KEY}",
+        label = "Update Log",
         icon = R.drawable.baseline_add,
     ) {
         fun passAttachLogId(attachLogId: String) =
-            "add_log?$ADD_SCREEN_ARGUMENT_KEY=$attachLogId"
+            "update_log?$ADD_SCREEN_ARGUMENT_KEY=$attachLogId"
     }
+
     object Notifications : StudentHomeDestinations(
         route = "notifications",
         label = "Notifications",

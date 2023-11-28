@@ -1,8 +1,8 @@
 package com.johnstanley.attachmentapp.data.repository
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.johnstanley.attachmentapp.data.model.AttachmentLog
 import com.johnstanley.attachmentapp.data.model.RequestState
@@ -19,7 +19,7 @@ object FirebaseAttachmentLogRepo : AttachmentLogRepo {
     private val firestore = FirebaseFirestore.getInstance()
     private val attachmentLogsCollection = firestore.collection("attachmentLogs")
 
-    override suspend fun getAllAttachmentLogs(studentId : String): Flow<AttachmentLogs> {
+    override suspend fun getAllAttachmentLogs(studentId: String): Flow<AttachmentLogs> {
         return try {
             val snapshot = attachmentLogsCollection
                 .whereEqualTo("studentId", studentId)
@@ -46,16 +46,19 @@ object FirebaseAttachmentLogRepo : AttachmentLogRepo {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun getFilteredAttachmentLogs(zonedDateTime: ZonedDateTime, studentId : String): Flow<AttachmentLogs> =
+    override suspend fun getFilteredAttachmentLogs(
+        zonedDateTime: ZonedDateTime,
+        studentId: String,
+    ): Flow<AttachmentLogs> =
 
         try {
             // Implement the query based on your requirements
             // You can use whereEqualTo, whereGreaterThan, etc.
             val snapshot = attachmentLogsCollection
                 .whereEqualTo("studentId", studentId)
-                .whereGreaterThan(
+                .whereGreaterThanOrEqualTo(
                     "date",
-                    Timestamp(zonedDateTime.toInstant().toEpochMilli(), 0).toDate(),
+                    zonedDateTime.toInstant().toEpochMilli(),
                 )
                 .get()
                 .await()
@@ -81,25 +84,26 @@ object FirebaseAttachmentLogRepo : AttachmentLogRepo {
         }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun getSelectedAttachmentLog(attachmentId: String): Flow<RequestState<AttachmentLog>> =
-        flow {
-            try {
-                val document = attachmentLogsCollection.document(attachmentId).get().await()
-                val attachmentLog = document.toObject(AttachmentLog::class.java)
-                if (attachmentLog != null) {
-                    emit(RequestState.Success(attachmentLog))
-                } else {
-                    emit(RequestState.Error(Exception("AttachmentLog not found")))
-                }
-            } catch (e: Exception) {
-                emit(RequestState.Error(e))
+    override suspend fun getSelectedAttachmentLog(attachmentId: String): RequestState<AttachmentLog> =
+        try {
+            Log.d("ATTACHID", "getSelectedAttachmentLog:$attachmentId ")
+            val document = attachmentLogsCollection
+                .whereEqualTo("id", attachmentId)
+                .get().await()
+            val attachmentLog = document.documents[0].toObject(AttachmentLog::class.java)
+            Log.d("TAG", "getSelectedAttachmentLog: ${attachmentLog?.title}")
+            if (attachmentLog != null) {
+                RequestState.Success(attachmentLog)
+            } else {
+                RequestState.Error(Exception("AttachmentLog not found"))
             }
+        } catch (e: Exception) {
+            RequestState.Error(e)
         }
 
     override suspend fun insertAttachmentLog(attachmentLog: AttachmentLog): RequestState<AttachmentLog> {
-        return try {
-            val document = attachmentLogsCollection.add(attachmentLog).await()
-            val insertedLog = attachmentLog.copy(id = document.id)
+        return try { attachmentLogsCollection.document(attachmentLog.id).set(attachmentLog).await()
+            val insertedLog = attachmentLog
             RequestState.Success(insertedLog)
         } catch (e: Exception) {
             RequestState.Error(e)
@@ -108,7 +112,8 @@ object FirebaseAttachmentLogRepo : AttachmentLogRepo {
 
     override suspend fun updateAttachmentLog(attachmentLog: AttachmentLog): RequestState<AttachmentLog> {
         return try {
-            attachmentLogsCollection.document(attachmentLog.id).set(attachmentLog).await()
+            attachmentLogsCollection.document(attachmentLog.id)
+                .set(attachmentLog).await()
             RequestState.Success(attachmentLog)
         } catch (e: Exception) {
             RequestState.Error(e)

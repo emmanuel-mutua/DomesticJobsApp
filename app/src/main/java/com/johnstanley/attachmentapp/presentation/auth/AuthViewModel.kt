@@ -48,10 +48,10 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.Loading)
+    private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
     val signInResponse = _signInResponse.asStateFlow()
 
-    private val _signUpResponse = MutableStateFlow<Response<Boolean>>(Response.Loading)
+    private val _signUpResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
     val signUpResponse = _signUpResponse.asStateFlow()
 
     fun signInEmailAndPassword(email: String, password: String, onSuccess: () -> Unit) {
@@ -82,6 +82,7 @@ class AuthViewModel @Inject constructor(
                             it.copy(
                                 isLoading = false,
                                 isSignedIn = true,
+                                message = "Success"
                             )
                         }
                     } else {

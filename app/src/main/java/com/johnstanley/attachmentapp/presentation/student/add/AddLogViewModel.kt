@@ -2,14 +2,13 @@ package com.johnstanley.attachmentapp.presentation.student.add
 
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -28,7 +27,9 @@ import com.johnstanley.attachmentapp.utils.fetchImagesFromFirebase
 import com.johnstanley.attachmentapp.utils.toInstant
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -42,8 +43,9 @@ class AddLogViewModel @Inject constructor(
     private val imageToDeleteDao: ImageToDeleteDao,
 ) : ViewModel() {
     val galleryState = GalleryState()
-    var uiState by mutableStateOf(UiState())
+    var _uiState = MutableStateFlow(UiState())
         private set
+    var uiState = _uiState.asStateFlow()
 
     init {
         getAttachmentLogIdArgument()
@@ -53,61 +55,82 @@ class AddLogViewModel @Inject constructor(
     }
 
     private fun getAttachmentLogIdArgument() {
-        uiState = uiState.copy(
-            selectedAttachLogId = savedStateHandle.get<String>(
-                key = ADD_SCREEN_ARGUMENT_KEY,
-            ),
-        )
+        _uiState.update {
+            it.copy(
+                selectedAttachLogId = savedStateHandle.get<String>(
+                    key = ADD_SCREEN_ARGUMENT_KEY,
+                ),
+            )
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchSelectedAttachmentLog() {
-        if (uiState.selectedAttachLogId != null) {
+        Log.d("Fetch selected", "fetchSelectedid : ${_uiState.value.selectedAttachLogId}")
+        if (_uiState.value.selectedAttachLogId != null) {
             viewModelScope.launch {
-                FirebaseAttachmentLogRepo.getSelectedAttachmentLog(attachmentId = uiState.selectedAttachLogId!!)
-                    .catch {
-                        emit(RequestState.Error(Exception("Attachment Log is already deleted.")))
-                    }
-                    .collect { attachmentLog ->
-                        if (attachmentLog is RequestState.Success) {
-                            setSelectedLog(attachmentLog = attachmentLog.data)
-                            setTitle(title = attachmentLog.data.title)
-                            setDescription(description = attachmentLog.data.description)
+                val result =
+                    FirebaseAttachmentLogRepo.getSelectedAttachmentLog(attachmentId = _uiState.value.selectedAttachLogId!!)
+                when (result) {
+                    is RequestState.Error -> TODO()
+                    RequestState.Idle -> TODO()
+                    RequestState.Loading -> TODO()
+                    is RequestState.Success -> {
+                        Log.d("AddLogVm", "fetchSelectedAttachmentLog:${result.data.title} ")
+                        setSelectedLog(attachmentLog = result.data)
+                        setTitle(title = result.data.title)
+                        setDescription(description = result.data.description)
 
-                            fetchImagesFromFirebase(
-                                remoteImagePaths = attachmentLog.data.images,
-                                onImageDownload = { downloadedImage ->
-                                    galleryState.addImage(
-                                        GalleryImage(
-                                            image = downloadedImage,
-                                            remoteImagePath = extractImagePath(
-                                                fullImageUrl = downloadedImage.toString(),
-                                            ),
+                        fetchImagesFromFirebase(
+                            remoteImagePaths = result.data.images,
+                            onImageDownload = { downloadedImage ->
+                                galleryState.addImage(
+                                    GalleryImage(
+                                        image = downloadedImage,
+                                        remoteImagePath = extractImagePath(
+                                            fullImageUrl = downloadedImage.toString(),
                                         ),
-                                    )
-                                },
-                            )
-                        }
+                                    ),
+                                )
+                            },
+                        )
                     }
+                }
             }
         }
     }
 
     private fun setSelectedLog(attachmentLog: AttachmentLog) {
-        uiState = uiState.copy(selectedAttachLog = attachmentLog)
+        _uiState.update {
+            it.copy(
+                selectedAttachLog = attachmentLog,
+            )
+        }
     }
 
     fun setTitle(title: String) {
-        uiState = uiState.copy(title = title)
+        _uiState.update {
+            it.copy(
+                title = title,
+            )
+        }
     }
 
     fun setDescription(description: String) {
-        uiState = uiState.copy(description = description)
+        _uiState.update {
+            it.copy(
+                description = description,
+            )
+        }
     }
 
     fun updateDateTime(zonedDateTime: ZonedDateTime) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            uiState = uiState.copy(updatedDateTime = zonedDateTime.toLocalDateTime().toInstant())
+            _uiState.update {
+                it.copy(
+                    updatedDateTime = zonedDateTime.toLocalDateTime().toInstant(),
+                )
+            }
         }
     }
 
@@ -117,8 +140,12 @@ class AddLogViewModel @Inject constructor(
         onError: (String) -> Unit,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (uiState.selectedAttachLogId != null) {
-                updateAttachmentLog(attachmentLog = attachmentLog, onSuccess = onSuccess, onError = onError)
+            if (_uiState.value.selectedAttachLogId != null) {
+                updateAttachmentLog(
+                    attachmentLog = attachmentLog,
+                    onSuccess = onSuccess,
+                    onError = onError,
+                )
             } else {
                 insertAttachmentLog(
                     attachmentLog = attachmentLog,
@@ -126,6 +153,20 @@ class AddLogViewModel @Inject constructor(
                     onError = onError,
                 )
             }
+        }
+    }
+
+    fun updateLog(
+        attachmentLog: AttachmentLog,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateAttachmentLog(
+                attachmentLog = attachmentLog,
+                onSuccess = onSuccess,
+                onError = onError,
+            )
         }
     }
 
@@ -137,9 +178,9 @@ class AddLogViewModel @Inject constructor(
         val result =
             FirebaseAttachmentLogRepo.insertAttachmentLog(
                 attachmentLog = attachmentLog.apply {
-                    if (uiState.updatedDateTime != null) {
+                    if (_uiState.value.updatedDateTime != null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            date =   uiState.updatedDateTime?.toEpochMilli() ?: 0L
+                            date = _uiState.value.updatedDateTime?.toEpochMilli() ?: 0L
                         }
                     }
                 },
@@ -164,15 +205,15 @@ class AddLogViewModel @Inject constructor(
         val result =
             FirebaseAttachmentLogRepo.updateAttachmentLog(
                 attachmentLog = attachmentLog.apply {
-                    id = uiState.selectedAttachLogId!!
-                    date = if (uiState.updatedDateTime != null) {
+                    id = _uiState.value.selectedAttachLogId!!
+                    date = if (_uiState.value.updatedDateTime != null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            uiState.updatedDateTime?.toEpochMilli() ?: 0L
+                            _uiState.value.updatedDateTime?.toEpochMilli() ?: 0L
                         } else {
                             TODO("VERSION.SDK_INT < O")
                         }
                     } else {
-                        uiState.selectedAttachLog!!.date
+                        _uiState.value.selectedAttachLog!!.date
                     }
                 },
             )
@@ -194,12 +235,12 @@ class AddLogViewModel @Inject constructor(
         onError: (String) -> Unit,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (uiState.selectedAttachLogId != null) {
+            if (_uiState.value.selectedAttachLogId != null) {
                 val result =
-                    FirebaseAttachmentLogRepo.deleteAttachmentLog(id = uiState.selectedAttachLogId!!)
+                    FirebaseAttachmentLogRepo.deleteAttachmentLog(id = _uiState.value.selectedAttachLogId!!)
                 if (result is RequestState.Success) {
                     withContext(Dispatchers.Main) {
-                        uiState.selectedAttachLog?.let {
+                        uiState.value.selectedAttachLog?.let {
                             deleteImagesFromFirebase(images = it.images)
                         }
                         onSuccess()

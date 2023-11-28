@@ -11,6 +11,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +29,7 @@ import com.johnstanley.attachmentapp.presentation.auth.AuthViewModel
 import com.johnstanley.attachmentapp.presentation.components.DisplayAlertDialog
 import com.johnstanley.attachmentapp.presentation.student.add.AddLogScreen
 import com.johnstanley.attachmentapp.presentation.student.add.AddLogViewModel
+import com.johnstanley.attachmentapp.presentation.student.add.UpdateLogScreen
 import com.johnstanley.attachmentapp.presentation.student.navigation.BottomNavigationWithBackStack
 import com.johnstanley.attachmentapp.presentation.student.navigation.StudentHomeDestinations
 import com.johnstanley.attachmentapp.presentation.student.profile.ProfileScreen
@@ -61,7 +63,7 @@ fun StudentHomeScreen(
                 homeContent(
                     navigateToWriteWithArgs = {
                         navController.navigate(
-                            StudentHomeDestinations.Add.passAttachLogId(
+                            StudentHomeDestinations.Update.passAttachLogId(
                                 attachLogId = it,
                             ),
                         )
@@ -71,6 +73,9 @@ fun StudentHomeScreen(
                     },
                 )
                 add(
+                    onBackPressed = { navController.popBackStack() },
+                )
+                update(
                     onBackPressed = { navController.popBackStack() },
                 )
                 notifications()
@@ -111,10 +116,75 @@ fun NavGraphBuilder.homeContent(
 }
 
 @OptIn(ExperimentalFoundationApi::class)
+fun NavGraphBuilder.update(onBackPressed: () -> Unit) {
+    composable(route = StudentHomeDestinations.Update.route) {
+        val viewModel: AddLogViewModel = hiltViewModel()
+        val uiState by viewModel.uiState.collectAsState()
+        val context = LocalContext.current
+        val galleryState = viewModel.galleryState
+        val pagerState = rememberPagerState(pageCount = { 5 })
+        UpdateLogScreen(
+            uiState = uiState,
+            pagerState = pagerState,
+            galleryState = galleryState,
+            onTitleChanged = { viewModel.setTitle(title = it) },
+            onDescriptionChanged = { viewModel.setDescription(description = it) },
+            onDeleteConfirmed = {
+                viewModel.deleteAttachmentLog(
+                    onSuccess = {
+                        Toast.makeText(
+                            context,
+                            "Deleted",
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                        // navigate back
+                    },
+                    onError = { message ->
+                        Toast.makeText(
+                            context,
+                            message,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    },
+                )
+            },
+            onDateTimeUpdated = { viewModel.updateDateTime(zonedDateTime = it) },
+            onBackPressed = onBackPressed,
+            onSaveClicked = {
+                viewModel.updateLog(
+                    attachmentLog = it,
+                    onSuccess = {
+                        Toast.makeText(
+                            context,
+                            "Success",
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    },
+                    onError = { message ->
+                        Toast.makeText(
+                            context,
+                            message,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    },
+                )
+            },
+            onImageSelect = {
+                val type = context.contentResolver.getType(it)?.split("/")?.last() ?: "jpg"
+                viewModel.addImage(image = it, imageType = type)
+            },
+            onImageDeleteClicked = {
+                galleryState.removeImage(it)
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 fun NavGraphBuilder.add(onBackPressed: () -> Unit) {
     composable(route = StudentHomeDestinations.Add.route) {
         val viewModel: AddLogViewModel = hiltViewModel()
-        val uiState = viewModel.uiState
+        val uiState by viewModel.uiState.collectAsState()
         val context = LocalContext.current
         val galleryState = viewModel.galleryState
         val pagerState = rememberPagerState(pageCount = { 5 })

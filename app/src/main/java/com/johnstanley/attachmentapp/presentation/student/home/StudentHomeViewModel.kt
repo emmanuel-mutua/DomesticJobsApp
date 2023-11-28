@@ -29,8 +29,8 @@ import javax.inject.Inject
 class StudentHomeViewModel @Inject constructor(
     private val connectivity: NetworkConnectivityObserver,
 ) : ViewModel() {
-    private lateinit var allDiariesJob: Job
-    private lateinit var filteredDiariesJob: Job
+    private lateinit var allLogsJob: Job
+    private lateinit var filteredLogsJob: Job
 
     val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
     private val currentUserId = currentUser?.uid ?: ""
@@ -53,7 +53,9 @@ class StudentHomeViewModel @Inject constructor(
         dateIsSelected = zonedDateTime != null
         attachmentLogs.value = RequestState.Loading
         if (dateIsSelected && zonedDateTime != null) {
-            observeFilteredAttachmentLogs(zonedDateTime = zonedDateTime)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                observeFilteredAttachmentLogs(zonedDateTime = zonedDateTime)
+            }
         } else {
             observeAllAttachmentLogs()
         }
@@ -61,9 +63,9 @@ class StudentHomeViewModel @Inject constructor(
 
     @OptIn(FlowPreview::class)
     private fun observeAllAttachmentLogs() {
-        allDiariesJob = viewModelScope.launch {
-            if (::filteredDiariesJob.isInitialized) {
-                filteredDiariesJob.cancelAndJoin()
+        allLogsJob = viewModelScope.launch {
+            if (::filteredLogsJob.isInitialized) {
+                filteredLogsJob.cancelAndJoin()
             }
             FirebaseAttachmentLogRepo.getAllAttachmentLogs(studentId = currentUserId).debounce(2000).collect { result ->
                 attachmentLogs.value = result
@@ -71,10 +73,11 @@ class StudentHomeViewModel @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun observeFilteredAttachmentLogs(zonedDateTime: ZonedDateTime) {
-        filteredDiariesJob = viewModelScope.launch {
-            if (::allDiariesJob.isInitialized) {
-                allDiariesJob.cancelAndJoin()
+        filteredLogsJob = viewModelScope.launch {
+            if (::allLogsJob.isInitialized) {
+                allLogsJob.cancelAndJoin()
             }
             FirebaseAttachmentLogRepo.getFilteredAttachmentLogs(zonedDateTime = zonedDateTime, studentId = currentUserId)
                 .collect { result ->

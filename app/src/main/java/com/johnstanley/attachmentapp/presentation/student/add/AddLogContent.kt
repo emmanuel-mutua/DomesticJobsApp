@@ -2,6 +2,7 @@ package com.johnstanley.attachmentapp.presentation.student.add
 
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -71,7 +72,7 @@ fun AddLogContent(
     LaunchedEffect(key1 = scrollState.maxValue) {
         scrollState.scrollTo(scrollState.maxValue)
     }
-
+    Log.d("TAG", "AddLogContent: ${uiState.title}")
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -107,7 +108,7 @@ fun AddLogContent(
             Spacer(modifier = Modifier.height(30.dp))
             TextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = title,
+                value = uiState.title,
                 onValueChange = onTitleChanged,
                 placeholder = { Text(text = "Title") },
                 colors = TextFieldDefaults.colors(
@@ -135,7 +136,7 @@ fun AddLogContent(
             )
             TextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = description,
+                value = uiState.description,
                 onValueChange = onDescriptionChanged,
                 placeholder = { Text(text = "Write description of the report.") },
                 colors = TextFieldDefaults.colors(

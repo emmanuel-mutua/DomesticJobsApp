@@ -37,7 +37,7 @@ fun StudentHomeContent(
 ) {
     if (dailyLogs.isNotEmpty()) {
         LazyColumn(
-            modifier = Modifier.padding(horizontal = 24.dp)
+            modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 55.dp)
                 .navigationBarsPadding()
                 .padding(top = paddingValues.calculateTopPadding()),
         ) {

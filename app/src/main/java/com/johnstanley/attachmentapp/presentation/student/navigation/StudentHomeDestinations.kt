@@ -1,6 +1,7 @@
 package com.johnstanley.attachmentapp.presentation.student.navigation
 
 import com.johnstanley.attachmentapp.R
+import com.johnstanley.attachmentapp.utils.Contants.ADD_SCREEN_ARGUMENT_KEY
 
 sealed class StudentHomeDestinations(
     val route: String,
@@ -14,9 +15,17 @@ sealed class StudentHomeDestinations(
     )
 
     object Add : StudentHomeDestinations(
-        route = "add_log",
+        route = "add_log?$ADD_SCREEN_ARGUMENT_KEY=" + "{$ADD_SCREEN_ARGUMENT_KEY}",
         label = "Add Log",
         icon = R.drawable.baseline_add,
+    ) {
+        fun passAttachLogId(attachLogId: String) =
+            "add_log?$ADD_SCREEN_ARGUMENT_KEY=$attachLogId"
+    }
+    object Notifications : StudentHomeDestinations(
+        route = "notifications",
+        label = "Notifications",
+        icon = R.drawable.baseline_notifications_active_24,
     )
 
     object Account : StudentHomeDestinations(

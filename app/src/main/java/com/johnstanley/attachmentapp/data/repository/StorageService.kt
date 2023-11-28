@@ -4,16 +4,15 @@ import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.johnstanley.attachmentapp.data.Response
+import com.johnstanley.attachmentapp.data.model.AttachmentLog
+import com.johnstanley.attachmentapp.data.model.RequestState
 import com.johnstanley.attachmentapp.presentation.auth.StaffData
 import com.johnstanley.attachmentapp.presentation.auth.StudentData
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
 
 typealias AddUserResponse = Response<Boolean>
-
-sealed class UserData {
-    data class Student(val data: StudentData) : UserData()
-    data class Staff(val data: StaffData) : UserData()
-}
+typealias AttachmentLogs = RequestState<Map<LocalDate, List<AttachmentLog>>>
 
 interface StorageService {
     suspend fun addStudent(user: StudentData): Boolean

@@ -1,120 +1,111 @@
 package com.johnstanley.attachmentapp.presentation.student.home
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.johnstanley.attachmentapp.presentation.auth.AuthViewModel
-import com.johnstanley.attachmentapp.presentation.components.DisplayAlertDialog
-import com.johnstanley.attachmentapp.presentation.student.add.AddLogScreen
-import com.johnstanley.attachmentapp.presentation.student.navigation.BottomNavigationWithBackStack
-import com.johnstanley.attachmentapp.presentation.student.navigation.StudentHomeDestinations
-import com.johnstanley.attachmentapp.presentation.student.profile.ProfileScreen
-import com.stevdzasan.messagebar.rememberMessageBarState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import com.johnstanley.attachmentapp.data.model.RequestState
+import com.johnstanley.attachmentapp.data.repository.AttachmentLogs
+import com.johnstanley.attachmentapp.presentation.student.components.HomeAppBar
+import com.johnstanley.attachmentapp.presentation.student.components.NavigationDrawer
+import java.time.ZonedDateTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun StudentHomeScreen(
-    navigateToLogin: () -> Unit,
-) {
-    val messageBarState = rememberMessageBarState()
-    val navController = rememberNavController()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-    val viewModel: AuthViewModel = hiltViewModel()
-
-    Scaffold(
-        modifier = Modifier.fillMaxWidth()
-            .statusBarsPadding().navigationBarsPadding(),
-        bottomBar = {
-            BottomNavigationWithBackStack(navController = navController)
-        },
-        content = {
-            NavHost(
-                navController = navController,
-                startDestination = StudentHomeDestinations.Home.route,
-            ) {
-                homeContent(
-                    drawerState = drawerState,
-                    onMenuClicked = {
-                        scope.launch {
-                            drawerState.open()
-                        }
-                    },
-                    onCalenderClicked = {},
-                )
-                add()
-                account(
-                    scope = scope,
-                    navigateToLogin = navigateToLogin,
-                    viewModel = viewModel,
-                )
-            }
-        },
-    )
-}
-
-fun NavGraphBuilder.homeContent(
+    attachmentLogs: AttachmentLogs,
     drawerState: DrawerState,
     onMenuClicked: () -> Unit,
-    onCalenderClicked: () -> Unit,
+    dateIsSelected: Boolean,
+    onDateSelected: (ZonedDateTime) -> Unit,
+    onDateReset: () -> Unit,
+    navigateToWriteWithArgs: (String) -> Unit,
+    navigateToWrite: () -> Unit,
 ) {
-    composable(route = StudentHomeDestinations.Home.route) {
-        HomeContent(
-            drawerState = drawerState,
-            onMenuClicked = onMenuClicked,
-            onCalenderClicked = onCalenderClicked,
-        )
-    }
-}
-
-fun NavGraphBuilder.add() {
-    composable(route = StudentHomeDestinations.Add.route) {
-        AddLogScreen()
-    }
-}
-
-fun NavGraphBuilder.account(
-    scope: CoroutineScope,
-    viewModel: AuthViewModel,
-    navigateToLogin: () -> Unit,
-) {
-    composable(route = StudentHomeDestinations.Account.route) {
-        var dialogOpened by remember { mutableStateOf(false) }
-        ProfileScreen(
-            onSignOutClicked = {
-                dialogOpened = true
+    var padding by remember { mutableStateOf(PaddingValues()) }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    NavigationDrawer(drawerState = drawerState, onAddAttachmentDetails = {}) {
+        Scaffold(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            topBar = {
+                HomeAppBar(
+                    onMenuClicked = onMenuClicked,
+                    scrollBehavior = scrollBehavior,
+                    dateIsSelected = dateIsSelected,
+                    onDateSelected = onDateSelected,
+                    onDateReset = onDateReset,
+                )
             },
-        )
-        DisplayAlertDialog(
-            title = "Sign Out",
-            message = "Are you sure you want to sign out?",
-            dialogOpened = dialogOpened,
-            onCloseDialog = {
-                dialogOpened = false
+            floatingActionButton = {
+                FloatingActionButton(
+                    modifier = Modifier.padding(
+                        end = padding.calculateEndPadding(LayoutDirection.Ltr),
+                        bottom = 50.dp
+                    ),
+                    onClick = navigateToWrite,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "New Attachlog Icon",
+                    )
+                }
             },
-            onYesClicked = {
-                scope.launch {
-                    viewModel.signOut()
-                    navigateToLogin()
+            content = {
+                padding = it
+                when (attachmentLogs) {
+                    is RequestState.Success -> {
+                        StudentHomeContent(
+                            paddingValues = it,
+                            dailyLogs = attachmentLogs.data,
+                            onClick = navigateToWriteWithArgs,
+                        )
+                    }
+
+                    is RequestState.Error -> {
+                        EmptyPage(
+                            title = "Error",
+                            subtitle = "${attachmentLogs.error.message}",
+                        )
+                    }
+
+                    RequestState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+
+                    else -> {}
                 }
             },
         )

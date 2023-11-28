@@ -20,6 +20,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
+import com.jakewharton.threetenabp.AndroidThreeTen
 import com.johnstanley.attachmentapp.presentation.auth.AuthNavGraph
 import com.johnstanley.attachmentapp.presentation.auth.AuthScreen
 import com.johnstanley.attachmentapp.presentation.auth.AuthViewModel
@@ -30,6 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AndroidThreeTen.init(this)
         installSplashScreen()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {

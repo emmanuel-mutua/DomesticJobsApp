@@ -93,6 +93,8 @@ class AuthViewModel @Inject constructor(
                         }
                     }
                 }
+
+                Response.Idle -> TODO()
             }
             _signInResponse.value = response
         }

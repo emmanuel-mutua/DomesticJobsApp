@@ -1,91 +1,94 @@
 package com.johnstanley.attachmentapp.presentation.auth
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.johnstanley.attachmentapp.presentation.staff.home.StaffHomeScreen
 import com.johnstanley.attachmentapp.presentation.student.home.StudentHomeScreen
 import com.johnstanley.attachmentapp.utils.Contants.StaffText
 import com.johnstanley.attachmentapp.utils.Contants.StudentText
 import com.stevdzasan.messagebar.rememberMessageBarState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
-fun AuthNavGraph() {
-    val navController = rememberNavController()
-    val viewModel: AuthViewModel = hiltViewModel()
-    val startDestination =
-        if (viewModel.currentUser != null && viewModel.isEmailVerified) {
-            AuthScreen.Home.route
-        } else {
-            AuthScreen.Login.route
-        }
-    val registerState = viewModel.registerState.collectAsState().value
+fun AuthNavGraph(
+    startDestination: String,
+    navController: NavHostController,
+    authViewModel: AuthViewModel,
+    registerState: AuthStateData,
+    activity: Activity,
+) {
     NavHost(navController = navController, startDestination = startDestination) {
         loginScreen(
-            navController = navController,
-            viewModel = viewModel,
-            authStateData = registerState,
+            registerState = registerState,
+            viewModel = authViewModel,
             navigateToRegister = {
-                navController.navigate(AuthScreen.Register.route)
+               navController.navigateWithPop(AuthScreen.Register.route)
             },
             navigateToHome = {
-                navController.navigate(AuthScreen.Home.route)
+                navController.navigate(AuthScreen.Home.route) {
+                    navController.popBackStack()
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                }
             },
         )
-        registerScreen(viewModel = viewModel, navigateToLogin = {
-            navController.popBackStack()
+        registerScreen(viewModel = authViewModel, navigateToLogin = {
+            navController.navigateWithPop(AuthScreen.Login.route)
         })
         homeScreen(
-            viewModel = viewModel,
+            registerState = registerState,
+            viewModel = authViewModel,
             navigateToLogin = {
+                navController.popBackStack()
                 navController.navigate(AuthScreen.Login.route)
             },
             navigateToStudent = {
+                navController.popBackStack()
                 navController.navigate(AuthScreen.StudentHome.route)
             },
             navigateToStaff = {
+                navController.popBackStack()
                 navController.navigate(AuthScreen.StaffHome.route)
             },
 
         )
         studentHomeScreen(
             navigateToLogin = {
-                navController.navigate(AuthScreen.Login.route)
-            }
+                activity.finish()
+
+//                navController.popBackStack()
+//                navController.navigate(AuthScreen.Login.route)
+            },
         )
         staffHomeScreen()
     }
 }
 
 fun NavGraphBuilder.loginScreen(
-    navController: NavController,
+    registerState: AuthStateData,
     viewModel: AuthViewModel,
-    authStateData: AuthStateData,
     navigateToRegister: () -> Unit,
     navigateToHome: () -> Unit,
 ) {
     composable(AuthScreen.Login.route) {
         LoginScreen(
-            navController = navController,
+            registerState = registerState,
             viewModel = viewModel,
-            authStateData = authStateData,
             navigateToRegister = navigateToRegister,
             navigateToHome = navigateToHome,
         )
@@ -114,6 +117,7 @@ fun NavGraphBuilder.registerScreen(
 
 @SuppressLint("CoroutineCreationDuringComposition")
 fun NavGraphBuilder.homeScreen(
+    registerState: AuthStateData,
     viewModel: AuthViewModel,
     navigateToLogin: () -> Unit,
     navigateToStaff: () -> Unit,
@@ -125,21 +129,18 @@ fun NavGraphBuilder.homeScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            val registerState = viewModel.registerState.collectAsState().value
-            val coroutineScope = rememberCoroutineScope()
-            coroutineScope.launch(Dispatchers.IO) {
-                viewModel.getRoleFromUserData { role ->
-                    if (role.isNotEmpty()) {
-                        when (role) {
-                            StudentText -> navigateToStudent()
-                            StaffText -> navigateToStaff()
-                            else -> navigateToLogin()
-                        }
-                    } else {
-                        navigateToLogin()
+            viewModel.getRoleFromUserData { role ->
+                if (role.isNotEmpty()) {
+                    when (role) {
+                        StudentText -> navigateToStudent()
+                        StaffText -> navigateToStaff()
+                        else -> navigateToLogin()
                     }
+                } else {
+                    navigateToLogin()
                 }
             }
+
             if (registerState.isLoading) {
                 CircularProgressIndicator()
             }
@@ -150,7 +151,7 @@ fun NavGraphBuilder.homeScreen(
 fun NavGraphBuilder.studentHomeScreen(navigateToLogin: () -> Unit) {
     composable(AuthScreen.StudentHome.route) {
         StudentHomeScreen(
-           navigateToLogin =  navigateToLogin
+            navigateToLogin = navigateToLogin,
         )
     }
 }
@@ -162,5 +163,14 @@ fun NavGraphBuilder.staffHomeScreen() {
 }
 
 fun NavController.navigateWithPop(route: String) {
-    navigate(route)
+    navigate(route) {
+        // Pop up to the start destination of the graph to
+        // avoid building up a large stack of destinations
+        // on the back stack as users select items
+        popUpTo(graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
 }

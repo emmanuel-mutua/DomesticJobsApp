@@ -48,18 +48,58 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.FirstLaunch)
+    private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
     val signInResponse = _signInResponse.asStateFlow()
 
-    private val _signUpResponse = MutableStateFlow<Response<Boolean>>(Response.FirstLaunch)
+    private val _signUpResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
     val signUpResponse = _signUpResponse.asStateFlow()
 
-    fun signInEmailAndPassword(email: String, password: String) {
+    fun signInEmailAndPassword(email: String, password: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             _signInResponse.value = Response.Loading
             val response = authRepo.signInEmailAndPassword(email, password)
+            when (response) {
+                Response.Loading -> {
+                    _registerState.update {
+                        it.copy(
+                            isLoading = true,
+                        )
+                    }
+                }
+
+                is Response.Failure -> {
+                    _registerState.update {
+                        it.copy(
+                            isLoading = false,
+                            message = response.message,
+                        )
+                    }
+                }
+
+                is Response.Success -> {
+                    if (isEmailVerified) {
+                        _registerState.update {
+                            it.copy(
+                                isLoading = false,
+                                isSignedIn = true,
+                                message = "Success"
+                            )
+                        }
+                    } else {
+                        _registerState.update {
+                            it.copy(
+                                isLoading = false,
+                                message = "Email Not Verified",
+                            )
+                        }
+                    }
+                }
+
+                Response.Idle -> TODO()
+            }
             _signInResponse.value = response
         }
+        onSuccess()
     }
 
     fun signUpEmailAndPassword(email: String, password: String) {
@@ -196,7 +236,9 @@ class AuthViewModel @Inject constructor(
 data class AuthStateData(
     val isLoading: Boolean = false,
     val role: String = "",
+    val message: String = "",
     val isEmailVerified: Boolean = false,
+    val isSignedIn: Boolean = false,
 )
 
 data class StudentData(

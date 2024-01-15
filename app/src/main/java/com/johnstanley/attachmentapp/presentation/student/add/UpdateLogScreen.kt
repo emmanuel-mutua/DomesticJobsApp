@@ -1,5 +1,6 @@
 package com.johnstanley.attachmentapp.presentation.student.add
 
+
 import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
@@ -34,7 +35,7 @@ import java.time.ZonedDateTime
 @OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddLogScreen(
+fun UpdateLogScreen(
     uiState: UiState,
     pagerState: PagerState,
     galleryState: GalleryState,
@@ -76,7 +77,7 @@ fun AddLogScreen(
             AnimatedVisibility(visible = selectedGalleryImage != null) {
                 Dialog(onDismissRequest = { selectedGalleryImage = null }) {
                     if (selectedGalleryImage != null) {
-                        ZoomableImage(
+                        ZomableImage(
                             selectedGalleryImage = selectedGalleryImage!!,
                             onCloseClicked = { selectedGalleryImage = null },
                             onDeleteClicked = {
@@ -94,7 +95,7 @@ fun AddLogScreen(
 }
 
 @Composable
-fun ZoomableImage(
+fun ZomableImage(
     selectedGalleryImage: GalleryImage,
     onCloseClicked: () -> Unit,
     onDeleteClicked: () -> Unit,

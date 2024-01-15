@@ -1,7 +1,6 @@
 package com.johnstanley.attachmentapp.presentation.auth
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +21,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,15 +37,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import com.johnstanley.attachmentapp.data.Response
 import com.johnstanley.attachmentapp.presentation.components.MyOutlinedTextField
 import com.johnstanley.attachmentapp.presentation.components.PassWordField
-import com.johnstanley.attachmentapp.ui.theme.AttachmentAppTheme
 import com.johnstanley.attachmentapp.utils.Contants
 import com.stevdzasan.messagebar.ContentWithMessageBar
 import com.stevdzasan.messagebar.rememberMessageBarState
@@ -55,14 +49,13 @@ import com.stevdzasan.messagebar.rememberMessageBarState
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginScreen(
-    navController: NavController,
+    registerState: AuthStateData,
     viewModel: AuthViewModel = hiltViewModel(),
-    authStateData: AuthStateData,
     navigateToRegister: () -> Unit,
     navigateToHome: () -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
+    val isLoading = registerState.isLoading
     var isSignedIn by remember { mutableStateOf(false) }
     var isError by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
@@ -71,48 +64,9 @@ fun LoginScreen(
     var role by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(role) }
-    val context = LocalContext.current
     val signInResponse by viewModel.signInResponse.collectAsState()
     val isEmailVerified = viewModel.isEmailVerified
-    when (signInResponse) {
-        Response.Loading -> {
-            isLoading = true
-        }
-
-        is Response.Success -> {
-            isLoading = false
-            var isSignedIn = (signInResponse as Response.Success<Boolean>).data
-            if (isSignedIn) {
-                isLoading = false
-                if (isEmailVerified) {
-                    navigateToHome()
-                } else {
-                    Toast.makeText(context, "Email not verified", Toast.LENGTH_SHORT).show()
-                    viewModel.reloadUser()
-                }
-            } else {
-                LaunchedEffect(Unit) {
-                    Toast.makeText(context, "Invalid Credentials", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-
-        is Response.Failure -> {
-            // Show Toast message for localized exception message
-            isError = true
-            isLoading = false
-            errorMessage = (signInResponse as Response.Failure).message
-            Log.d("ErrorMsg Login", errorMessage)
-            val context = LocalContext.current
-            LaunchedEffect(Unit) {
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        else -> {
-            isLoading = false
-        }
-    }
+    val context = LocalContext.current
 
     Scaffold(
         modifier = Modifier
@@ -207,8 +161,16 @@ fun LoginScreen(
                                 .show()
                             return@Button
                         }
-                        viewModel.signInEmailAndPassword(email, password)
-                        isLoading = false
+                        viewModel.signInEmailAndPassword(email, password) {
+                            if (registerState.isSignedIn) {
+                                Toast.makeText(context, registerState.message, Toast.LENGTH_SHORT)
+                                    .show()
+                                navigateToHome()
+                            } else {
+                                Toast.makeText(context, registerState.message, Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
                     },
                     shape = RoundedCornerShape(16),
                     colors = ButtonDefaults.buttonColors(
@@ -258,12 +220,5 @@ fun LoginScreen(
                 }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun LoginScreenPrev() {
-    AttachmentAppTheme {
     }
 }

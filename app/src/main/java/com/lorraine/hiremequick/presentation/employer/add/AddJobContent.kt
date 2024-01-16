@@ -5,17 +5,15 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,37 +26,31 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import com.lorraine.hiremequick.R
 import com.lorraine.hiremequick.data.model.JobPosting
-import kotlinx.coroutines.launch
+import com.lorraine.hiremequick.presentation.employer.components.DatePickerIcon
+import java.time.ZonedDateTime
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AddJobPostingContent(
     uiState: UiState,
-    title: String,
     onTitleChanged: (String) -> Unit,
-    description: String,
     onDescriptionChanged: (String) -> Unit,
+    onModeOfWorkChanged: (String) -> Unit,
+    onNumberOfEmployeesUpdated: (String) -> Unit,
+    applicationDeadlineUpdated: (ZonedDateTime) -> Unit,
     paddingValues: PaddingValues,
     onSaveClicked: (JobPosting) -> Unit,
 ) {
     val scrollState = rememberScrollState()
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val focusManager = LocalFocusManager.current
-
     LaunchedEffect(key1 = scrollState.maxValue) {
         scrollState.scrollTo(scrollState.maxValue)
     }
@@ -66,7 +58,6 @@ fun AddJobPostingContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .imePadding()
             .navigationBarsPadding()
             .padding(top = paddingValues.calculateTopPadding())
             .padding(bottom = 24.dp)
@@ -80,75 +71,35 @@ fun AddJobPostingContent(
                 .verticalScroll(state = rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(30.dp))
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    AsyncImage(
-                        modifier = Modifier.size(120.dp),
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(R.drawable.baseline_add)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = "Add",
-                    )
-                }
-            Spacer(modifier = Modifier.height(30.dp))
-            TextField(
-                modifier = Modifier.fillMaxWidth(),
+            JobPostingTextField(
                 value = uiState.title,
-                onValueChange = onTitleChanged,
-                placeholder = { Text(text = "Write Job Title") },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Unspecified,
-                    disabledIndicatorColor = Color.Unspecified,
-                    unfocusedIndicatorColor = Color.Unspecified,
-                    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                ),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next,
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = {
-                        scope.launch {
-                            scrollState.animateScrollTo(Int.MAX_VALUE)
-                            focusManager.moveFocus(FocusDirection.Down)
-                        }
-                    },
-                ),
-                maxLines = 1,
-                singleLine = true,
-            )
-            TextField(
-                modifier = Modifier.fillMaxWidth(),
+                text = "Write Job title",
+                onValueChange = {onTitleChanged.invoke(it)})
+            JobPostingTextField(
                 value = uiState.description,
-                onValueChange = onDescriptionChanged,
-                placeholder = { Text(text = "Write description here (Skills, Experience ...).") },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Unspecified,
-                    disabledIndicatorColor = Color.Unspecified,
-                    unfocusedIndicatorColor = Color.Unspecified,
-                    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                ),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next,
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = {
-                        focusManager.clearFocus()
-                    },
-                ),
-            )
+                text = "Write description here (Skills, Experience ...)",
+                onValueChange = {onDescriptionChanged.invoke(it)})
+            JobPostingTextField(
+                value = uiState.modeOfWork,
+                text = "Specify (FullTime/PartTime)",
+                onValueChange = {onModeOfWorkChanged.invoke(it)})
+            JobPostingTextField(
+                value = uiState.noOfEmployees,
+                text = "Number of employees needed (1,2 ..)",
+                onValueChange = {onNumberOfEmployeesUpdated.invoke(it)})
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(text = "Select Application Deadline")
+                DatePickerIcon(onDateTimeUpdated = applicationDeadlineUpdated)
+            }
+
+
         }
 
         Column(verticalArrangement = Arrangement.Bottom) {
-            Spacer(modifier = Modifier.height(12.dp))
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 modifier = Modifier
@@ -179,4 +130,36 @@ fun AddJobPostingContent(
             }
         }
     }
+}
+
+@Composable
+fun JobPostingTextField(
+    value : String,
+    text : String,
+    onValueChange: (String) -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+    TextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = value,
+        onValueChange = {onValueChange.invoke(it)},
+        placeholder = { Text(text = text) },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Unspecified,
+            disabledIndicatorColor = Color.Unspecified,
+            unfocusedIndicatorColor = Color.Unspecified,
+            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        ),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next,
+        ),
+        keyboardActions = KeyboardActions(
+            onNext = {
+                focusManager.clearFocus()
+            },
+        ),
+    )
 }

@@ -2,6 +2,7 @@ package com.lorraine.hiremequick.presentation.employer.add
 
 
 import android.annotation.SuppressLint
+import android.content.pm.ChangedPackages
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,6 +16,9 @@ fun UpdateJobScreen(
     uiState: UiState,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
+    onModeOfWorkChanged: (String) -> Unit,
+    onNumberOfEmployeesUpdated: (String) -> Unit,
+    applicationDeadlineUpdated: (ZonedDateTime) -> Unit,
     onDeleteConfirmed: () -> Unit,
     onDateTimeUpdated: (ZonedDateTime) -> Unit,
     onBackPressed: () -> Unit,
@@ -33,13 +37,14 @@ fun UpdateJobScreen(
         content = { paddingValues ->
             AddJobPostingContent(
                 uiState = uiState,
-                title = uiState.title,
-                onTitleChanged = onTitleChanged,
-                description = uiState.description,
-                onDescriptionChanged = onDescriptionChanged,
                 paddingValues = paddingValues,
+                onTitleChanged = onTitleChanged,
+                onDescriptionChanged = onDescriptionChanged,
+                onModeOfWorkChanged = onModeOfWorkChanged,
+                applicationDeadlineUpdated = applicationDeadlineUpdated,
+                onNumberOfEmployeesUpdated = onNumberOfEmployeesUpdated,
                 onSaveClicked = onSaveClicked,
-            )
+                )
         },
     )
 }

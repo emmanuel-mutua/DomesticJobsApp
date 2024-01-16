@@ -32,12 +32,15 @@ fun AddJobScreen(
         content = { paddingValues ->
             AddJobPostingContent(
                 uiState = uiState,
-                title = uiState.title,
                 onTitleChanged = onTitleChanged,
-                description = uiState.description,
                 onDescriptionChanged = onDescriptionChanged,
                 paddingValues = paddingValues,
                 onSaveClicked = onSaveClicked,
+                onModeOfWorkChanged = {
+
+                },
+                applicationDeadlineUpdated = {},
+                onNumberOfEmployeesUpdated = {}
             )
         },
     )

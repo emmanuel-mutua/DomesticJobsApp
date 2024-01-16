@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.presentation.components.DisplayAlertDialog
+import com.lorraine.hiremequick.presentation.employer.components.DatePickerIcon
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
@@ -83,7 +84,7 @@ fun WriteTopBar(
             Column {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text ="Log",
+                    text ="Job",
                     style = TextStyle(
                         fontSize = MaterialTheme.typography.titleLarge.fontSize,
                         fontWeight = FontWeight.Bold,
@@ -106,24 +107,11 @@ fun WriteTopBar(
         },
         actions = {
             if (dateTimeUpdated) {
-                IconButton(onClick = {
-                    currentDate = LocalDate.now()
-                    currentTime = LocalTime.now()
-                    dateTimeUpdated = false
-                    onDateTimeUpdated(
-                        ZonedDateTime.of(
-                            currentDate,
-                            currentTime,
-                            ZoneId.systemDefault(),
-                        ),
-                    )
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close Icon",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close Icon",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
             } else {
                 IconButton(onClick = { dateDialog.show() }) {
                     Icon(

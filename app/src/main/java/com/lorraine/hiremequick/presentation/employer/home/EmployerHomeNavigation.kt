@@ -157,6 +157,15 @@ fun NavGraphBuilder.update(onBackPressed: () -> Unit) {
                         ).show()
                     },
                 )
+            },
+            onModeOfWorkChanged = {
+                viewModel.setModeOfWork(it)
+            },
+            onNumberOfEmployeesUpdated = {
+                viewModel.setNumberOfEmployeesNeeded(it)
+            },
+            applicationDeadlineUpdated = {
+                viewModel.updateApplicationDeadlineDate(zonedDateTime = it)
             }
         )
     }

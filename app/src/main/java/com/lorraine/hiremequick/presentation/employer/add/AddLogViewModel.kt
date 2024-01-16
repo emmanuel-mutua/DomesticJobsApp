@@ -97,7 +97,7 @@ class AddLogViewModel @Inject constructor(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             _uiState.update {
                 it.copy(
-                    updatedDateTime = zonedDateTime.toLocalDateTime().toInstant(),
+                    datePosted = zonedDateTime.toLocalDateTime().toInstant(),
                 )
             }
         }
@@ -147,9 +147,9 @@ class AddLogViewModel @Inject constructor(
         val result =
             FirebaseAttachmentLogRepo.insertJob(
                 jobPosting = attachmentLog.apply {
-                    if (_uiState.value.updatedDateTime != null) {
+                    if (_uiState.value.datePosted != null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            datePosted = _uiState.value.updatedDateTime?.toEpochMilli() ?: 0L
+                            datePosted = _uiState.value.datePosted?.toEpochMilli() ?: 0L
                         }
                     }
                 },
@@ -174,9 +174,9 @@ class AddLogViewModel @Inject constructor(
             FirebaseAttachmentLogRepo.updateJobPosting(
                 jobPosting = attachmentLog.apply {
                     jobId = _uiState.value.selectedJobPostingId!!
-                    datePosted = if (_uiState.value.updatedDateTime != null) {
+                    datePosted = if (_uiState.value.datePosted != null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            _uiState.value.updatedDateTime?.toEpochMilli() ?: 0L
+                            _uiState.value.datePosted?.toEpochMilli() ?: 0L
                         } else {
                             TODO("VERSION.SDK_INT < O")
                         }
@@ -218,6 +218,32 @@ class AddLogViewModel @Inject constructor(
             }
         }
     }
+
+    fun updateApplicationDeadlineDate(zonedDateTime: ZonedDateTime) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            _uiState.update {
+                it.copy(
+                    applicationDeadline = zonedDateTime.toLocalDateTime().toInstant(),
+                )
+            }
+        }
+    }
+
+    fun setModeOfWork(mode: String) {
+        _uiState.update {
+            it.copy(
+                modeOfWork = mode,
+            )
+        }
+    }
+
+    fun setNumberOfEmployeesNeeded(number: String) {
+        _uiState.update {
+            it.copy(
+                noOfEmployees = number,
+            )
+        }
+    }
 }
 
 data class UiState(
@@ -225,5 +251,10 @@ data class UiState(
     val selectedJobPosting: JobPosting? = null,
     val title: String = "",
     val description: String = "",
-    val updatedDateTime: Instant? = null,
-)
+    val modeOfWork: String = "",
+    val noOfEmployees: String = "",
+    val datePosted: Instant? = null,
+    val applicationDeadline: Instant? = null,
+) {
+
+}

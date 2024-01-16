@@ -17,6 +17,8 @@ data class JobPosting(
     var description: String = "",
     var modeOfJob : String = "FullTime",
     var numberOfEmployeesNeeded : String = "",
+    var nameOfCountry : String = "",
+    var nameOfCity : String = "",
     var datePosted : Long = Instant.now().toEpochMilli(),
     var applicationDeadline : Long = Instant.now().toEpochMilli(),
     var applicantId : String = ""

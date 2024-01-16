@@ -14,10 +14,15 @@ fun AddJobScreen(
     uiState: UiState,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
+    onNameOfCountryChanged: (String) -> Unit,
+    onNameOfCityChanged: (String) -> Unit,
     onDeleteConfirmed: () -> Unit,
     onDateTimeUpdated: (ZonedDateTime) -> Unit,
     onBackPressed: () -> Unit,
     onSaveClicked: (JobPosting) -> Unit,
+    onModeOfWorkChanged: (String) -> Unit,
+    onNumberOfEmployeesUpdated: (String) -> Unit,
+    applicationDeadlineUpdated: (ZonedDateTime) -> Unit,
 ) {
 
     Scaffold(
@@ -36,11 +41,11 @@ fun AddJobScreen(
                 onDescriptionChanged = onDescriptionChanged,
                 paddingValues = paddingValues,
                 onSaveClicked = onSaveClicked,
-                onModeOfWorkChanged = {
-
-                },
-                applicationDeadlineUpdated = {},
-                onNumberOfEmployeesUpdated = {}
+                onModeOfWorkChanged = onModeOfWorkChanged,
+                applicationDeadlineUpdated = applicationDeadlineUpdated,
+                onNumberOfEmployeesUpdated = onNumberOfEmployeesUpdated,
+                onNameOfCountryChanged = onNameOfCountryChanged,
+                onNameOfCityChanged = onNameOfCityChanged
             )
         },
     )

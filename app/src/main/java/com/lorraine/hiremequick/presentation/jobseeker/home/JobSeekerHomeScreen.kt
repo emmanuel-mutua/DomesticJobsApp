@@ -1,4 +1,4 @@
-package com.lorraine.hiremequick.presentation.employer.home
+package com.lorraine.hiremequick.presentation.jobseeker.home
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
@@ -34,13 +34,12 @@ import com.lorraine.hiremequick.data.model.RequestState
 import com.lorraine.hiremequick.data.repository.JobPostings
 import com.lorraine.hiremequick.presentation.employer.components.HomeAppBar
 import com.lorraine.hiremequick.presentation.employer.components.NavigationDrawer
-import java.time.ZonedDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun EmployerHomeScreen(
-    attachmentLogs: JobPostings,
+fun JobSeekerHomeScreen(
+    jobPostings: JobPostings,
     drawerState: DrawerState,
     onMenuClicked: () -> Unit,
     navigateToWriteWithArgs: (String) -> Unit,
@@ -82,22 +81,19 @@ fun EmployerHomeScreen(
             },
             content = {
                 padding = it
-                when (attachmentLogs) {
+                when (jobPostings) {
                     is RequestState.Success -> {
-                        EmployerHomeContent(
+                        JobSeekerHomeContent(
                             paddingValues = it,
-                            jobPosting = attachmentLogs.data,
-                            onClick = {
-                                //navigateToWriteWithArgs
-                                      //Disable onclick
-                            },
+                            jobPosting = jobPostings.data,
+                            onClick = navigateToWriteWithArgs,
                         )
                     }
 
                     is RequestState.Error -> {
                         EmptyPage(
                             title = "Error",
-                            subtitle = "${attachmentLogs.error.message}",
+                            subtitle = "${jobPostings.error.message}",
                         )
                     }
 

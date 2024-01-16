@@ -13,7 +13,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-object FirebaseAttachmentLogRepo : AttachmentLogRepo {
+object FirebaseJobPostingRepo : JobPostingRepo {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val jobPostingCollection = firestore.collection("jobPosting")

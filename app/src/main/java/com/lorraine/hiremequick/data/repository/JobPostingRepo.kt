@@ -5,7 +5,7 @@ import com.lorraine.hiremequick.data.model.RequestState
 import kotlinx.coroutines.flow.Flow
 import java.time.ZonedDateTime
 
-interface AttachmentLogRepo {
+interface JobPostingRepo {
     suspend fun getAllJobsPostings(employerId : String): Flow<JobPostings>
     suspend fun getFilteredJobPostings(zonedDateTime: ZonedDateTime, studentId: String): Flow<JobPostings>
     suspend fun getSelectedJob(jobId: String): RequestState<JobPosting>

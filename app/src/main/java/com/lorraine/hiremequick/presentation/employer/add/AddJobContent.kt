@@ -31,8 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.presentation.employer.components.DatePickerIcon
 import java.time.ZonedDateTime
@@ -48,6 +51,8 @@ fun AddJobPostingContent(
     applicationDeadlineUpdated: (ZonedDateTime) -> Unit,
     paddingValues: PaddingValues,
     onSaveClicked: (JobPosting) -> Unit,
+    onNameOfCountryChanged: (String) -> Unit,
+    onNameOfCityChanged: (String) -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
@@ -71,6 +76,7 @@ fun AddJobPostingContent(
                 .verticalScroll(state = rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(30.dp))
+            Text(text = "Job Details", style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
             JobPostingTextField(
                 value = uiState.title,
                 text = "Write Job title",
@@ -87,6 +93,15 @@ fun AddJobPostingContent(
                 value = uiState.noOfEmployees,
                 text = "Number of employees needed (1,2 ..)",
                 onValueChange = {onNumberOfEmployeesUpdated.invoke(it)})
+            Text(text = "Job Location", style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
+            JobPostingTextField(
+                value = uiState.nameOfCountry,
+                text = "Enter the country",
+                onValueChange = {onNameOfCountryChanged.invoke(it)})
+            JobPostingTextField(
+                value = uiState.nameOfCity,
+                text = "Enter city name",
+                onValueChange = {onNameOfCityChanged.invoke(it)})
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,

@@ -1,4 +1,4 @@
-package com.lorraine.hiremequick.presentation.employer.home
+package com.lorraine.hiremequick.presentation.jobseeker.home
 
 import android.annotation.SuppressLint
 import android.widget.Toast
@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun EmployerHomeScreen(
+fun JobSeekerHomeScreen(
     navigateToLogin: () -> Unit,
 ) {
     val navController = rememberNavController()
@@ -93,11 +93,11 @@ fun NavGraphBuilder.homeContent(
 ) {
     composable(route = EmployerHomeDestinations.Home.route) {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-        val viewModel: EmployerHomeViewModel = hiltViewModel()
+        val viewModel: JobSeekerHomeViewModel = hiltViewModel()
         val attachmentLogs = viewModel.jobPostings
         val scope = rememberCoroutineScope()
-        EmployerHomeScreen(
-            attachmentLogs = attachmentLogs.value,
+        JobSeekerHomeScreen(
+            jobPostings = attachmentLogs.value,
             drawerState = drawerState,
             onMenuClicked = {
                 scope.launch {
@@ -277,6 +277,5 @@ fun NavGraphBuilder.account(
 
 fun NavGraphBuilder.notifications() {
     composable(EmployerHomeDestinations.Notifications.route) {
-        TestScreen(text = "No recent applicants")
     }
 }

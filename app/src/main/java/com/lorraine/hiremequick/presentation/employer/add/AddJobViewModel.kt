@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.data.model.RequestState
-import com.lorraine.hiremequick.data.repository.FirebaseAttachmentLogRepo
+import com.lorraine.hiremequick.data.repository.FirebaseJobPostingRepo
 import com.lorraine.hiremequick.utils.Contants.ADD_SCREEN_ARGUMENT_KEY
 import com.lorraine.hiremequick.utils.toInstant
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,13 +31,13 @@ class AddLogViewModel @Inject constructor(
     var uiState = _uiState.asStateFlow()
 
     init {
-        getAttachmentLogIdArgument()
+        getJobIdArgument()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            fetchSelectedAttachmentLog()
+            fetchSelectedJobPosting()
         }
     }
 
-    private fun getAttachmentLogIdArgument() {
+    private fun getJobIdArgument() {
         _uiState.update {
             it.copy(
                 selectedJobPostingId = savedStateHandle.get<String>(
@@ -48,21 +48,29 @@ class AddLogViewModel @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun fetchSelectedAttachmentLog() {
+    private fun fetchSelectedJobPosting() {
         Log.d("Fetch selected", "fetchSelectedid : ${_uiState.value.selectedJobPostingId}")
         if (_uiState.value.selectedJobPostingId != null) {
             viewModelScope.launch {
                 val result =
-                    FirebaseAttachmentLogRepo.getSelectedJob(jobId = _uiState.value.selectedJobPostingId!!)
+                    FirebaseJobPostingRepo.getSelectedJob(jobId = _uiState.value.selectedJobPostingId!!)
                 when (result) {
-                    is RequestState.Error -> TODO()
-                    RequestState.Idle -> TODO()
-                    RequestState.Loading -> TODO()
+                    is RequestState.Error -> {
+
+                    }
+                    RequestState.Idle -> {
+
+                    }
+                    RequestState.Loading -> {
+
+                    }
                     is RequestState.Success -> {
                         Log.d("AddLogVm", "fetchSelectedAttachmentLog:${result.data.title} ")
                         setSelectedLog(attachmentLog = result.data)
                         setTitle(title = result.data.title)
                         setDescription(description = result.data.description)
+                        setModeOfWork(mode = result.data.modeOfJob)
+                        setNumberOfEmployeesNeeded(number = result.data.numberOfEmployeesNeeded)
                     }
                 }
             }
@@ -103,15 +111,15 @@ class AddLogViewModel @Inject constructor(
         }
     }
 
-    fun upsertLog(
+    fun upsertJob(
         attachmentLog: JobPosting,
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.value.selectedJobPostingId != null) {
-                updateAttachmentLog(
-                    attachmentLog = attachmentLog,
+                updateJobPosting(
+                    jobPosting = attachmentLog,
                     onSuccess = onSuccess,
                     onError = onError,
                 )
@@ -125,14 +133,14 @@ class AddLogViewModel @Inject constructor(
         }
     }
 
-    fun updateLog(
-        attachmentLog: JobPosting,
+    fun updateJob(
+        jobPosting: JobPosting,
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            updateAttachmentLog(
-                attachmentLog = attachmentLog,
+            updateJobPosting(
+                jobPosting = jobPosting,
                 onSuccess = onSuccess,
                 onError = onError,
             )
@@ -145,7 +153,7 @@ class AddLogViewModel @Inject constructor(
         onError: (String) -> Unit,
     ) {
         val result =
-            FirebaseAttachmentLogRepo.insertJob(
+            FirebaseJobPostingRepo.insertJob(
                 jobPosting = attachmentLog.apply {
                     if (_uiState.value.datePosted != null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -165,14 +173,14 @@ class AddLogViewModel @Inject constructor(
         }
     }
 
-    private suspend fun updateAttachmentLog(
-        attachmentLog: JobPosting,
+    private suspend fun updateJobPosting(
+        jobPosting: JobPosting,
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
     ) {
         val result =
-            FirebaseAttachmentLogRepo.updateJobPosting(
-                jobPosting = attachmentLog.apply {
+            FirebaseJobPostingRepo.updateJobPosting(
+                jobPosting = jobPosting.apply {
                     jobId = _uiState.value.selectedJobPostingId!!
                     datePosted = if (_uiState.value.datePosted != null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -196,14 +204,14 @@ class AddLogViewModel @Inject constructor(
         }
     }
 
-    fun deleteAttachmentLog(
+    fun deleteJobPosting(
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.value.selectedJobPostingId != null) {
                 val result =
-                    FirebaseAttachmentLogRepo.deleteJobPosting(id = _uiState.value.selectedJobPostingId!!)
+                    FirebaseJobPostingRepo.deleteJobPosting(id = _uiState.value.selectedJobPostingId!!)
                 if (result is RequestState.Success) {
                     withContext(Dispatchers.Main) {
                         uiState.value.selectedJobPosting?.let {
@@ -244,6 +252,22 @@ class AddLogViewModel @Inject constructor(
             )
         }
     }
+
+    fun setNameOfCity(cityName: String) {
+        _uiState.update {
+            it.copy(
+                nameOfCity = cityName,
+            )
+        }
+    }
+
+    fun setNameOfCountry(countryName: String) {
+        _uiState.update {
+            it.copy(
+                nameOfCountry = countryName,
+            )
+        }
+    }
 }
 
 data class UiState(
@@ -253,6 +277,8 @@ data class UiState(
     val description: String = "",
     val modeOfWork: String = "",
     val noOfEmployees: String = "",
+    val nameOfCountry: String = "",
+    val nameOfCity: String = "",
     val datePosted: Instant? = null,
     val applicationDeadline: Instant? = null,
 ) {

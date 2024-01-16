@@ -42,8 +42,6 @@ fun DatePickerIcon(
     var dateTimeUpdated by remember { mutableStateOf(false) }
 
     IconButton(onClick = {
-        currentDate = LocalDate.now()
-        currentTime = LocalTime.now()
         dateTimeUpdated = false
         onDateTimeUpdated(
             ZonedDateTime.of(

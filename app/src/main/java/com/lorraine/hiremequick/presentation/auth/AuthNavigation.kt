@@ -15,7 +15,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.lorraine.hiremequick.presentation.staff.home.JobSeekerHomeScreen
+import com.lorraine.hiremequick.presentation.jobseeker.home.JobSeekerHomeScreen
 import com.lorraine.hiremequick.presentation.employer.home.EmployerHomeScreen
 import com.lorraine.hiremequick.utils.Contants.Employer
 import com.lorraine.hiremequick.utils.Contants.JobSeeker
@@ -174,7 +174,9 @@ fun NavGraphBuilder.welcomeScreen(
 
 fun NavGraphBuilder.jobSeekerHomeScreen(navigateToLogin: () -> Unit) {
     composable(AuthScreen.JobSeekerHome.route) {
-        JobSeekerHomeScreen()
+        JobSeekerHomeScreen(
+            navigateToLogin = navigateToLogin
+        )
     }
 }
 

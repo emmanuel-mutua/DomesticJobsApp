@@ -84,7 +84,7 @@ fun WriteTopBar(
             Column {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text ="Job",
+                    text ="New Job",
                     style = TextStyle(
                         fontSize = MaterialTheme.typography.titleLarge.fontSize,
                         fontWeight = FontWeight.Bold,

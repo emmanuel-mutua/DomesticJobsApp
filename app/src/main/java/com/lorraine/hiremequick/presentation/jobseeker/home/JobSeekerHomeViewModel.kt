@@ -1,4 +1,4 @@
-package com.lorraine.hiremequick.presentation.employer.home
+package com.lorraine.hiremequick.presentation.jobseeker.home
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -26,7 +26,7 @@ import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.N)
 @HiltViewModel
-class EmployerHomeViewModel @Inject constructor(
+class JobSeekerHomeViewModel @Inject constructor(
     private val connectivity: NetworkConnectivityObserver,
 ) : ViewModel() {
     private lateinit var allLogsJob: Job

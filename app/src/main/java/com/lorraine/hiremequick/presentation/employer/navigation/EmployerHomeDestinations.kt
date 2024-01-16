@@ -15,23 +15,23 @@ sealed class EmployerHomeDestinations(
     )
 
     object Add : EmployerHomeDestinations(
-        route = "add_log",
-        label = "Add Log",
+        route = "add_job",
+        label = "Add Job",
         icon = R.drawable.baseline_add,
     )
 
     object Update : EmployerHomeDestinations(
-        route = "update_log?$ADD_SCREEN_ARGUMENT_KEY=" + "{$ADD_SCREEN_ARGUMENT_KEY}",
-        label = "Update Log",
+        route = "update_job?$ADD_SCREEN_ARGUMENT_KEY=" + "{$ADD_SCREEN_ARGUMENT_KEY}",
+        label = "Update Job",
         icon = R.drawable.baseline_add,
     ) {
-        fun passAttachLogId(attachLogId: String) =
-            "update_log?$ADD_SCREEN_ARGUMENT_KEY=$attachLogId"
+        fun passJobPostingId(attachLogId: String) =
+            "update_job?$ADD_SCREEN_ARGUMENT_KEY=$attachLogId"
     }
 
     object Notifications : EmployerHomeDestinations(
-        route = "notifications",
-        label = "Notifications",
+        route = "applications",
+        label = "Applications",
         icon = R.drawable.baseline_notifications_active_24,
     )
 

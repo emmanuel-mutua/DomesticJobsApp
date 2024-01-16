@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.johnstanley.attachmentapp"
+    namespace = "com.lorraine.hiremequick"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.johnstanley.attachmentapp"
+        applicationId = "ccom.lorraine.hiremequick"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -81,12 +81,6 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-auth:21.1.0")
-
-    // Room components
-    implementation("androidx.room:room-runtime:2.5.2")
-    ksp("androidx.room:room-compiler:2.5.2")
-    implementation("androidx.room:room-ktx:2.5.2")
-
 
     // dagger hilt
     implementation("com.google.dagger:hilt-android:2.48.1")

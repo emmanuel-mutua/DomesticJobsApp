@@ -16,5 +16,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Attachment App"
+rootProject.name = "HireMeQuick"
 include(":app")

@@ -42,19 +42,19 @@ class EmployerHomeViewModel @Inject constructor(
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getAttachmentLogs()
+            getJobs()
         }
         viewModelScope.launch {
             connectivity.observe().collect { network = it }
         }
     }
 
-    fun getAttachmentLogs(zonedDateTime: ZonedDateTime? = null) {
+    fun getJobs(zonedDateTime: ZonedDateTime? = null) {
         dateIsSelected = zonedDateTime != null
         jobPostings.value = RequestState.Loading
         if (dateIsSelected && zonedDateTime != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                observeFilteredAttachmentLogs(zonedDateTime = zonedDateTime)
+                getAllJobsFiltered(zonedDateTime = zonedDateTime)
             }
         } else {
             observeAllJobs()
@@ -74,7 +74,7 @@ class EmployerHomeViewModel @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun observeFilteredAttachmentLogs(zonedDateTime: ZonedDateTime) {
+    private fun getAllJobsFiltered(zonedDateTime: ZonedDateTime) {
         filteredLogsJob = viewModelScope.launch {
             if (::allLogsJob.isInitialized) {
                 allLogsJob.cancelAndJoin()

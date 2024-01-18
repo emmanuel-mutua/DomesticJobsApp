@@ -6,6 +6,8 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.data.model.RequestState
 import com.lorraine.hiremequick.data.repository.FirebaseJobPostingRepo
@@ -20,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.ZonedDateTime
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,12 +31,20 @@ class AddLogViewModel @Inject constructor(
 ) : ViewModel() {
     var _uiState = MutableStateFlow(UiState())
         private set
-    var uiState = _uiState.asStateFlow()
+    val uiState = _uiState.asStateFlow()
+
+    val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
 
     init {
         getJobIdArgument()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             fetchSelectedJobPosting()
+        }
+        _uiState.update {
+            it.copy(
+                employerId = currentUser?.uid?:"",
+                jobId = UUID.randomUUID().toString()
+            )
         }
     }
 
@@ -58,18 +69,21 @@ class AddLogViewModel @Inject constructor(
                     is RequestState.Error -> {
 
                     }
+
                     RequestState.Idle -> {
 
                     }
+
                     RequestState.Loading -> {
 
                     }
+
                     is RequestState.Success -> {
                         Log.d("AddLogVm", "fetchSelectedAttachmentLog:${result.data.title} ")
-                        setSelectedLog(attachmentLog = result.data)
+                        setSelectedJob(jobPosting = result.data)
                         setTitle(title = result.data.title)
                         setDescription(description = result.data.description)
-                        setModeOfWork(mode = result.data.modeOfJob)
+                        setModeOfWork(mode = result.data.modeOfWork)
                         setNumberOfEmployeesNeeded(number = result.data.numberOfEmployeesNeeded)
                     }
                 }
@@ -77,10 +91,10 @@ class AddLogViewModel @Inject constructor(
         }
     }
 
-    private fun setSelectedLog(attachmentLog: JobPosting) {
+    private fun setSelectedJob(jobPosting: JobPosting) {
         _uiState.update {
             it.copy(
-                selectedJobPosting = attachmentLog,
+                selectedJobPosting = jobPosting,
             )
         }
     }
@@ -112,20 +126,20 @@ class AddLogViewModel @Inject constructor(
     }
 
     fun upsertJob(
-        attachmentLog: JobPosting,
+        jobPosting: JobPosting,
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.value.selectedJobPostingId != null) {
                 updateJobPosting(
-                    jobPosting = attachmentLog,
+                    jobPosting = jobPosting,
                     onSuccess = onSuccess,
                     onError = onError,
                 )
             } else {
-                insertAttachmentLog(
-                    attachmentLog = attachmentLog,
+                insertJob(
+                    jobPosting = jobPosting,
                     onSuccess = onSuccess,
                     onError = onError,
                 )
@@ -147,14 +161,14 @@ class AddLogViewModel @Inject constructor(
         }
     }
 
-    private suspend fun insertAttachmentLog(
-        attachmentLog: JobPosting,
+    private suspend fun insertJob(
+        jobPosting: JobPosting,
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
     ) {
         val result =
             FirebaseJobPostingRepo.insertJob(
-                jobPosting = attachmentLog.apply {
+                jobPosting = jobPosting.apply {
                     if (_uiState.value.datePosted != null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             datePosted = _uiState.value.datePosted?.toEpochMilli() ?: 0L
@@ -165,6 +179,17 @@ class AddLogViewModel @Inject constructor(
         if (result is RequestState.Success) {
             withContext(Dispatchers.Main) {
                 onSuccess()
+                _uiState.update {
+                    it.copy(
+                        jobId = "",
+                        title = "",
+                        description = "",
+                        modeOfWork = "",
+                        numberOfEployeesNeeded = "",
+                        nameOfCountry = "",
+                        nameOfCity = ""
+                    )
+                }
             }
         } else if (result is RequestState.Error) {
             withContext(Dispatchers.Main) {
@@ -248,7 +273,7 @@ class AddLogViewModel @Inject constructor(
     fun setNumberOfEmployeesNeeded(number: String) {
         _uiState.update {
             it.copy(
-                noOfEmployees = number,
+                numberOfEployeesNeeded = number,
             )
         }
     }
@@ -271,12 +296,14 @@ class AddLogViewModel @Inject constructor(
 }
 
 data class UiState(
+    val jobId: String = "",
+    val employerId: String = "",
     val selectedJobPostingId: String? = null,
     val selectedJobPosting: JobPosting? = null,
     val title: String = "",
     val description: String = "",
     val modeOfWork: String = "",
-    val noOfEmployees: String = "",
+    val numberOfEployeesNeeded: String = "",
     val nameOfCountry: String = "",
     val nameOfCity: String = "",
     val datePosted: Instant? = null,

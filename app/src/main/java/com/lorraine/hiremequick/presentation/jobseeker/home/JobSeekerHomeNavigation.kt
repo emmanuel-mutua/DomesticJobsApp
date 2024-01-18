@@ -31,6 +31,8 @@ import com.lorraine.hiremequick.presentation.employer.add.UpdateJobScreen
 import com.lorraine.hiremequick.presentation.employer.navigation.BottomNavigationWithBackStack
 import com.lorraine.hiremequick.presentation.employer.navigation.EmployerHomeDestinations
 import com.lorraine.hiremequick.presentation.employer.profile.ProfileScreen
+import com.lorraine.hiremequick.presentation.jobseeker.navigation.JobSeekerBottomNavigationWithBackStack
+import com.lorraine.hiremequick.presentation.jobseeker.navigation.JobSeekerHomeDestinations
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -44,39 +46,24 @@ fun JobSeekerHomeScreen(
     val scope = rememberCoroutineScope()
 
     Scaffold(
-        modifier = Modifier.fillMaxWidth()
-            .statusBarsPadding().navigationBarsPadding(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .navigationBarsPadding(),
         bottomBar = {
             val currentRoute =
                 navController.currentBackStackEntryAsState()?.value?.destination?.route
-            if (currentRoute != EmployerHomeDestinations.Add.route) {
-                BottomNavigationWithBackStack(navController = navController)
-            }
+            JobSeekerBottomNavigationWithBackStack(navController = navController)
+
         },
         content = {
             NavHost(
                 navController = navController,
-                startDestination = EmployerHomeDestinations.Home.route,
+                startDestination = JobSeekerHomeDestinations.Home.route,
             ) {
-                homeContent(
-                    navigateToWriteWithArgs = {
-                        navController.navigate(
-                            EmployerHomeDestinations.Update.passJobPostingId(
-                                attachLogId = it,
-                            ),
-                        )
-                    },
-                    navigateToWrite = {
-                        navController.navigate(EmployerHomeDestinations.Add.route)
-                    },
-                )
-                add(
-                    onBackPressed = { navController.popBackStack() },
-                )
-                update(
-                    onBackPressed = { navController.popBackStack() },
-                )
-                notifications()
+                homeContent()
+                searchScreen()
+                jobApplications()
                 account(
                     scope = scope,
                     navigateToLogin = navigateToLogin,
@@ -87,171 +74,33 @@ fun JobSeekerHomeScreen(
     )
 }
 
-fun NavGraphBuilder.homeContent(
-    navigateToWriteWithArgs: (String) -> Unit,
-    navigateToWrite: () -> Unit,
-) {
+fun NavGraphBuilder.homeContent() {
     composable(route = EmployerHomeDestinations.Home.route) {
-        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val viewModel: JobSeekerHomeViewModel = hiltViewModel()
-        val attachmentLogs = viewModel.jobPostings
-        val scope = rememberCoroutineScope()
+        val jobPostings = viewModel.jobPostings
         JobSeekerHomeScreen(
-            jobPostings = attachmentLogs.value,
-            drawerState = drawerState,
-            onMenuClicked = {
-                scope.launch {
-                    drawerState.open()
-                }
-            },
-            navigateToWriteWithArgs = navigateToWriteWithArgs,
-            navigateToWrite = navigateToWrite,
+            jobPostings = jobPostings.value,
         )
     }
 }
-fun NavGraphBuilder.update(onBackPressed: () -> Unit) {
-    composable(route = EmployerHomeDestinations.Update.route) {
-        val viewModel: AddLogViewModel = hiltViewModel()
-        val uiState by viewModel.uiState.collectAsState()
-        val context = LocalContext.current
-        UpdateJobScreen(
-            uiState = uiState,
-            onTitleChanged = { viewModel.setTitle(title = it) },
-            onDescriptionChanged = { viewModel.setDescription(description = it) },
-            onDeleteConfirmed = {
-                viewModel.deleteJobPosting(
-                    onSuccess = {
-                        Toast.makeText(
-                            context,
-                            "Deleted",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                        // navigate back
-                    },
-                    onError = { message ->
-                        Toast.makeText(
-                            context,
-                            message,
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    },
-                )
-            },
-            onDateTimeUpdated = { viewModel.updateDateTime(zonedDateTime = it) },
-            onBackPressed = onBackPressed,
-            onSaveClicked = {
-                viewModel.updateJob(
-                    jobPosting = it,
-                    onSuccess = {
-                        Toast.makeText(
-                            context,
-                            "Success",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    },
-                    onError = { message ->
-                        Toast.makeText(
-                            context,
-                            message,
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    },
-                )
-            },
-            onModeOfWorkChanged = {
-                viewModel.setModeOfWork(it)
-            },
-            onNumberOfEmployeesUpdated = {
-                viewModel.setNumberOfEmployeesNeeded(it)
-            },
-            applicationDeadlineUpdated = {
-                viewModel.updateApplicationDeadlineDate(zonedDateTime = it)
-            },
-            onNameOfCountryChanged = {
-                viewModel.setNameOfCountry(it)
-            },
-            onNameOfCityChanged = {
-                viewModel.setNameOfCity(it)
-            }
-        )
+fun NavGraphBuilder.searchScreen() {
+    composable(JobSeekerHomeDestinations.Search.route) {
+        TestScreen(text = "Search")
+    }
+}
+fun NavGraphBuilder.jobApplications() {
+    composable(JobSeekerHomeDestinations.JobApplications.route) {
+        TestScreen(text = "Job Applications")
     }
 }
 
-fun NavGraphBuilder.add(onBackPressed: () -> Unit) {
-    composable(route = EmployerHomeDestinations.Add.route) {
-        val viewModel: AddLogViewModel = hiltViewModel()
-        val uiState by viewModel.uiState.collectAsState()
-        val context = LocalContext.current
-        AddJobScreen(
-            uiState = uiState,
-            onTitleChanged = { viewModel.setTitle(title = it) },
-            onDescriptionChanged = { viewModel.setDescription(description = it) },
-            onDeleteConfirmed = {
-                viewModel.deleteJobPosting(
-                    onSuccess = {
-                        Toast.makeText(
-                            context,
-                            "Deleted",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                        // navigate back
-                    },
-                    onError = { message ->
-                        Toast.makeText(
-                            context,
-                            message,
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    },
-                )
-            },
-            onDateTimeUpdated = { viewModel.updateDateTime(zonedDateTime = it) },
-            onBackPressed = onBackPressed,
-            onSaveClicked = {
-                viewModel.upsertJob(
-                    attachmentLog = it,
-                    onSuccess = {
-                        Toast.makeText(
-                            context,
-                            "Success",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    },
-                    onError = { message ->
-                        Toast.makeText(
-                            context,
-                            message,
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    },
-                )
-            },
-            onModeOfWorkChanged = {
-                viewModel.setModeOfWork(it)
-            },
-            onNumberOfEmployeesUpdated = {
-                viewModel.setNumberOfEmployeesNeeded(it)
-            },
-            applicationDeadlineUpdated = {
-                viewModel.updateApplicationDeadlineDate(zonedDateTime = it)
-            },
-            onNameOfCityChanged = {
-                viewModel.setNameOfCity(it)
-            },
-            onNameOfCountryChanged = {
-                viewModel.setNameOfCountry(it)
-
-            }
-        )
-    }
-}
 
 fun NavGraphBuilder.account(
     scope: CoroutineScope,
     viewModel: AuthViewModel,
     navigateToLogin: () -> Unit,
 ) {
-    composable(route = EmployerHomeDestinations.Account.route) {
+    composable(route = JobSeekerHomeDestinations.Account.route) {
         var dialogOpened by remember { mutableStateOf(false) }
         ProfileScreen(
             onSignOutClicked = {
@@ -275,7 +124,3 @@ fun NavGraphBuilder.account(
     }
 }
 
-fun NavGraphBuilder.notifications() {
-    composable(EmployerHomeDestinations.Notifications.route) {
-    }
-}

@@ -102,9 +102,7 @@ fun RegisterScreen(
                     onSuccessRegistration()
                     Toast.makeText(
                         context,
-                        "Account created," +
-//                                " Please verify email" +
-                                "",
+                        "Account created,Login",
                         Toast.LENGTH_LONG,
                     )
                         .show()

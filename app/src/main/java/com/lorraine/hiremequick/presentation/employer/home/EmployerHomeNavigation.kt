@@ -59,13 +59,6 @@ fun EmployerHomeScreen(
                 startDestination = EmployerHomeDestinations.Home.route,
             ) {
                 homeContent(
-                    navigateToWriteWithArgs = {
-                        navController.navigate(
-                            EmployerHomeDestinations.Update.passJobPostingId(
-                                attachLogId = it,
-                            ),
-                        )
-                    },
                     navigateToWrite = {
                         navController.navigate(EmployerHomeDestinations.Add.route)
                     },
@@ -88,23 +81,13 @@ fun EmployerHomeScreen(
 }
 
 fun NavGraphBuilder.homeContent(
-    navigateToWriteWithArgs: (String) -> Unit,
     navigateToWrite: () -> Unit,
 ) {
     composable(route = EmployerHomeDestinations.Home.route) {
-        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val viewModel: EmployerHomeViewModel = hiltViewModel()
         val attachmentLogs = viewModel.jobPostings
-        val scope = rememberCoroutineScope()
         EmployerHomeScreen(
             attachmentLogs = attachmentLogs.value,
-            drawerState = drawerState,
-            onMenuClicked = {
-                scope.launch {
-                    drawerState.open()
-                }
-            },
-            navigateToWriteWithArgs = navigateToWriteWithArgs,
             navigateToWrite = navigateToWrite,
         )
     }
@@ -209,7 +192,7 @@ fun NavGraphBuilder.add(onBackPressed: () -> Unit) {
             onBackPressed = onBackPressed,
             onSaveClicked = {
                 viewModel.upsertJob(
-                    attachmentLog = it,
+                    jobPosting = it,
                     onSuccess = {
                         Toast.makeText(
                             context,
@@ -240,7 +223,6 @@ fun NavGraphBuilder.add(onBackPressed: () -> Unit) {
             },
             onNameOfCountryChanged = {
                 viewModel.setNameOfCountry(it)
-
             }
         )
     }

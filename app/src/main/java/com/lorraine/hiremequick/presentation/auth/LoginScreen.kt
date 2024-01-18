@@ -63,16 +63,8 @@ fun LoginScreen(
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
     val isLoading = registerState.isLoading
-    var isSignedIn by remember { mutableStateOf(false) }
-    var isError by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
-    val roles = listOf(Contants.Employer, Contants.JobSeeker)
-    var role by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var selectedRole by remember { mutableStateOf(role) }
-    val signInResponse by viewModel.signInResponse.collectAsState()
-    val isEmailVerified = viewModel.isEmailVerified
     val context = LocalContext.current
     Scaffold(
         modifier = Modifier

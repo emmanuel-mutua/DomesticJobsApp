@@ -25,27 +25,11 @@ class AuthViewModel @Inject constructor(
     private val storageService: StorageService,
 ) : ViewModel() {
     private var _registerState = MutableStateFlow(AuthStateData())
-    private var _loggedInResponse = MutableStateFlow(LoggedInUser())
-    val loggedInResponse = _loggedInResponse.asStateFlow()
     val registerState = _registerState.asStateFlow()
-    val isEmailVerified get() = true
-//        authRepo.currentUser?.isEmailVerified ?:
     val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
     private val currentUserId = currentUser?.uid ?: ""
     private var _jobSeekerData = MutableStateFlow(JobSeekerData())
     private var _employerData = MutableStateFlow(EmployerData())
-
-    init {
-        viewModelScope.launch {
-            authRepo.isEmailVerified().collectLatest { isEmailVerified ->
-                _registerState.update {
-                    it.copy(
-                        isEmailVerified = isEmailVerified,
-                    )
-                }
-            }
-        }
-    }
 
     private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
     val signInResponse = _signInResponse.asStateFlow()
@@ -76,7 +60,6 @@ class AuthViewModel @Inject constructor(
                 }
 
                 is Response.Success -> {
-                    if (isEmailVerified) {
                         _registerState.update {
                             it.copy(
                                 isLoading = false,
@@ -84,17 +67,9 @@ class AuthViewModel @Inject constructor(
                                 message = "Success"
                             )
                         }
-                    } else {
-                        _registerState.update {
-                            it.copy(
-                                isLoading = false,
-                                message = "Email Not Verified",
-                            )
-                        }
-                    }
                 }
 
-                Response.Idle -> TODO()
+                Response.Idle -> Unit
             }
             _signInResponse.value = response
         }
@@ -107,12 +82,6 @@ class AuthViewModel @Inject constructor(
             val response = authRepo.signUpEmailAndPassword(email, password)
             delay(3000)
             _signUpResponse.value = response
-        }
-    }
-
-    fun sendEmailVerification() {
-        viewModelScope.launch {
-            authRepo.sendEmailVerification()
         }
     }
 
@@ -232,7 +201,6 @@ data class AuthStateData(
     val isLoading: Boolean = false,
     val role: String = "",
     val message: String = "",
-    val isEmailVerified: Boolean = false,
     val isSignedIn: Boolean = false,
 )
 
@@ -243,7 +211,6 @@ data class JobSeekerData(
     val registrationNumber: String = "",
     val phoneNumber: String = "",
     val role: String = "",
-    val addedAttachmentDetails: Boolean = false,
 )
 
 data class EmployerData(

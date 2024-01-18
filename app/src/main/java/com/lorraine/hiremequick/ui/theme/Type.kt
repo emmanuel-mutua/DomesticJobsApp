@@ -19,6 +19,14 @@ val titleLarge = TextStyle(
     letterSpacing = 0.sp,
     textAlign = TextAlign.Center
 )
+val smallText = TextStyle(
+    fontFamily = FontFamily.Default,
+    fontWeight = FontWeight.Normal,
+    fontSize = 10.sp,
+    lineHeight = 10.sp,
+    letterSpacing = 0.sp,
+    textAlign = TextAlign.Center
+)
 val bodyMediumLight = TextStyle(
     fontFamily = Poppins,
     fontWeight = FontWeight.ExtraLight,

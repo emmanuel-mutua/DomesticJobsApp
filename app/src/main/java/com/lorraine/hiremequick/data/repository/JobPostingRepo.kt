@@ -7,6 +7,7 @@ import java.time.ZonedDateTime
 
 interface JobPostingRepo {
     suspend fun getAllJobsPostings(employerId : String): Flow<JobPostings>
+    suspend fun getAllJobsPostings(): Flow<JobPostings>
     suspend fun getFilteredJobPostings(zonedDateTime: ZonedDateTime, studentId: String): Flow<JobPostings>
     suspend fun getSelectedJob(jobId: String): RequestState<JobPosting>
     suspend fun insertJob(jobPosting: JobPosting): RequestState<JobPosting>

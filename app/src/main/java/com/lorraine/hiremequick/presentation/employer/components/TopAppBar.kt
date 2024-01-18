@@ -26,27 +26,20 @@ import java.time.ZonedDateTime
 @Composable
 fun HomeAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    onMenuClicked: () -> Unit,
 ) {
     TopAppBar(
         scrollBehavior = scrollBehavior,
         navigationIcon = {
-            IconButton(onClick = onMenuClicked) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Hamburger Menu Icon",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                )
-            }
+
         },
         title = {
-            Text(text = "Your Job Posting")
+            Text(text = "HireMeQuick", color = MaterialTheme.colorScheme.primary)
         },
         actions = {
                 IconButton(onClick = { }) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = "Date Icon",
+                        contentDescription = "Refresh",
                         tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }

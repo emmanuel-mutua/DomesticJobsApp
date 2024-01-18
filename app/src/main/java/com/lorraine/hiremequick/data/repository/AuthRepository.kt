@@ -23,18 +23,13 @@ typealias SignInResponse = Response<Boolean>
 typealias SignOutResponse = Response<Boolean>
 typealias SignUpResponse = Response<Boolean>
 typealias AuthStateResponse = StateFlow<Boolean>
-typealias SendEmailVerificationResponse = Response<Boolean>
-typealias IsEmailVerifiedResponse = Boolean
 
 interface AuthRepository {
     val currentUser: FirebaseUser?
-    fun getErrorMessage(): Flow<String>
     suspend fun signInEmailAndPassword(email: String, password: String): SignInResponse
     suspend fun signUpEmailAndPassword(email: String, password: String): SignUpResponse
     fun signOut(): SignOutResponse
     fun getAuthState(viewModelScope: CoroutineScope): AuthStateResponse
-    suspend fun sendEmailVerification(): SendEmailVerificationResponse
-    fun isEmailVerified(): Flow<Boolean>
     suspend fun reloadFirebaseUser()
 }
 
@@ -43,13 +38,6 @@ class AuthAuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
     override val currentUser: FirebaseUser?
         get() = auth.currentUser
-
-    override fun getErrorMessage(): Flow<String> {
-        return flowOf(loginMessage)
-    }
-
-    var loginMessage: String = ""
-        get() = ""
 
     override suspend fun signInEmailAndPassword(email: String, password: String): SignInResponse {
         return try {
@@ -84,26 +72,19 @@ class AuthAuthRepositoryImpl @Inject constructor(
         return try {
             suspendCoroutine { continuation ->
                 auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Log.d("Auth", "Sign in successful")
-                            continuation.resume(Response.Success(true))
-                        } else {
-                            task.exception?.let { exception ->
-                                Log.d("Auth, Exception", "${exception.localizedMessage}")
-                                continuation.resume(
-                                    Response.Failure(
-                                        exception.localizedMessage ?: "Unknown error",
-                                    ),
-                                )
-                            }
-                        }
+                    .addOnSuccessListener {
+                        continuation.resume(Response.Success(true))
+                    }
+                    .addOnFailureListener { exception ->
+                        Response.Failure(
+                            exception.localizedMessage ?: "Unknown error",
+                        )
                     }
             }
-        } catch (e: Exception) {
-            Response.Failure("E")
-        } catch (e: FirebaseAuthException) {
-            Response.Failure("E")
+        }catch (e : Exception){
+            Response.Failure(
+                e.message?:"Unknown Error"
+            )
         }
     }
 
@@ -125,25 +106,6 @@ class AuthAuthRepositoryImpl @Inject constructor(
             auth.removeAuthStateListener(authStateListener)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), auth.currentUser == null)
-
-    override suspend fun sendEmailVerification(): SendEmailVerificationResponse {
-        return try {
-            auth.currentUser?.sendEmailVerification()
-            Response.Success(true)
-        } catch (e: Exception) {
-            Response.Failure("E")
-        }
-    }
-
-    override fun isEmailVerified(): Flow<Boolean> = callbackFlow {
-        val authStateListener = AuthStateListener { auth ->
-            trySend(auth.currentUser?.isEmailVerified?:false)
-        }
-        auth.addAuthStateListener(authStateListener)
-        awaitClose {
-            auth.removeAuthStateListener(authStateListener)
-        }
-    }
 
     override suspend fun reloadFirebaseUser() {
         auth.currentUser?.reload()?.await()

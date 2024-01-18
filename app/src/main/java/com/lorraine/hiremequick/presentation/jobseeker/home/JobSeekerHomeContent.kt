@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.presentation.employer.components.JobPostingHolder
+import com.lorraine.hiremequick.presentation.jobseeker.components.JobPostHolder
 import java.time.LocalDate
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -33,7 +34,6 @@ import java.time.LocalDate
 fun JobSeekerHomeContent(
     paddingValues: PaddingValues,
     jobPosting: Map<LocalDate, List<JobPosting>>,
-    onClick: (String) -> Unit,
 ) {
     if (jobPosting.isNotEmpty()) {
         LazyColumn(
@@ -51,7 +51,7 @@ fun JobSeekerHomeContent(
                     items = jobs,
                     key = { it.jobId },
                 ) {
-                    JobPostingHolder(jobPosting = it, onClick = onClick)
+                    JobPostHolder(jobPosting = it, onClick = {})
                 }
             }
         }
@@ -111,7 +111,7 @@ fun DateHeader(localDate: LocalDate) {
 @Composable
 fun EmptyPage(
     title: String = "No jobs posted",
-    subtitle: String = "Add jobs",
+    subtitle: String = "",
 ) {
     Column(
         modifier = Modifier

@@ -44,6 +44,31 @@ object FirebaseJobPostingRepo : JobPostingRepo {
         }
     }
 
+    override suspend fun getAllJobsPostings(): Flow<JobPostings> {
+        return try {
+            val snapshot = jobPostingCollection
+                .get().await()
+            val jobs = snapshot.toObjects(JobPosting::class.java).groupBy {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val timestampMillis = it.datePosted
+                    val timestampInstant = Instant.ofEpochMilli(timestampMillis)
+                    timestampInstant.atZone(ZoneId.systemDefault()).toLocalDate()
+                } else {
+                    TODO("VERSION.SDK_INT < O")
+                }
+            }
+            flow {
+                emit(
+                    RequestState.Success(
+                        data = jobs,
+                    ),
+                )
+            }
+        } catch (e: Exception) {
+            flow { emit(RequestState.Error(e)) }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getFilteredJobPostings(
         zonedDateTime: ZonedDateTime,

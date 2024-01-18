@@ -117,7 +117,6 @@ fun NavGraphBuilder.registerScreen(
             viewModel = viewModel,
             navigateBack = navigateBack,
             onSuccessRegistration = {
-                viewModel.sendEmailVerification()
                 navigateToLogin()
             },
             onGotoLoginClicked = {
@@ -200,3 +199,4 @@ fun NavController.navigateWithPop(route: String) {
         restoreState = true
     }
 }
+

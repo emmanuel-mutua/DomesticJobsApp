@@ -76,32 +76,46 @@ fun AddJobPostingContent(
                 .verticalScroll(state = rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(30.dp))
-            Text(text = "Job Details", style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
+            Text(
+                text = "Job Details",
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            )
             JobPostingTextField(
                 value = uiState.title,
                 text = "Write Job title",
-                onValueChange = {onTitleChanged.invoke(it)})
+                onValueChange = { onTitleChanged.invoke(it) })
             JobPostingTextField(
                 value = uiState.description,
                 text = "Write description here (Skills, Experience ...)",
-                onValueChange = {onDescriptionChanged.invoke(it)})
+                onValueChange = { onDescriptionChanged.invoke(it) })
             JobPostingTextField(
                 value = uiState.modeOfWork,
                 text = "Specify (FullTime/PartTime)",
-                onValueChange = {onModeOfWorkChanged.invoke(it)})
+                onValueChange = { onModeOfWorkChanged.invoke(it) })
             JobPostingTextField(
-                value = uiState.noOfEmployees,
+                value = uiState.numberOfEployeesNeeded,
                 text = "Number of employees needed (1,2 ..)",
-                onValueChange = {onNumberOfEmployeesUpdated.invoke(it)})
-            Text(text = "Job Location", style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
+                onValueChange = { onNumberOfEmployeesUpdated.invoke(it) })
+            Text(
+                text = "Job Location",
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            )
             JobPostingTextField(
                 value = uiState.nameOfCountry,
                 text = "Enter the country",
-                onValueChange = {onNameOfCountryChanged.invoke(it)})
+                onValueChange = { onNameOfCountryChanged.invoke(it) })
             JobPostingTextField(
                 value = uiState.nameOfCity,
                 text = "Enter city name",
-                onValueChange = {onNameOfCityChanged.invoke(it)})
+                onValueChange = { onNameOfCityChanged.invoke(it) })
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -122,13 +136,26 @@ fun AddJobPostingContent(
                     .padding(bottom = 50.dp)
                     .height(54.dp),
                 onClick = {
-                    if (uiState.title.isNotEmpty() && uiState.description.isNotEmpty()) {
+                    if (uiState.title.isNotEmpty()
+                        && uiState.description.isNotEmpty()
+                        && uiState.nameOfCountry.isNotEmpty()
+                        && uiState.nameOfCity.isNotEmpty()
+                        && uiState.modeOfWork.isNotEmpty()
+                        && uiState.numberOfEployeesNeeded.isNotEmpty()
+                    ) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             onSaveClicked(
                                 JobPosting().apply {
+                                    this.jobId = uiState.jobId
+                                    this.employerId = uiState.employerId
                                     this.title = uiState.title
                                     this.description = uiState.description
-                                },
+                                    this.modeOfWork = uiState.modeOfWork
+                                    this.numberOfEmployeesNeeded = uiState.numberOfEployeesNeeded
+                                    this.nameOfCountry = uiState.nameOfCountry
+                                    this.nameOfCity = uiState.nameOfCity
+                                    this.applicationDeadline = uiState.applicationDeadline?.toEpochMilli() ?: 0L
+                                }
                             )
                         }
                     } else {
@@ -149,15 +176,15 @@ fun AddJobPostingContent(
 
 @Composable
 fun JobPostingTextField(
-    value : String,
-    text : String,
+    value: String,
+    text: String,
     onValueChange: (String) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     TextField(
         modifier = Modifier.fillMaxWidth(),
         value = value,
-        onValueChange = {onValueChange.invoke(it)},
+        onValueChange = { onValueChange.invoke(it) },
         placeholder = { Text(text = text) },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent,

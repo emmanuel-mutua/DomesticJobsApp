@@ -28,87 +28,56 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import com.lorraine.hiremequick.data.model.RequestState
 import com.lorraine.hiremequick.data.repository.JobPostings
 import com.lorraine.hiremequick.presentation.employer.components.HomeAppBar
-import com.lorraine.hiremequick.presentation.employer.components.NavigationDrawer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun JobSeekerHomeScreen(
     jobPostings: JobPostings,
-    drawerState: DrawerState,
-    onMenuClicked: () -> Unit,
-    navigateToWriteWithArgs: (String) -> Unit,
-    navigateToWrite: () -> Unit,
 ) {
     var padding by remember { mutableStateOf(PaddingValues()) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    NavigationDrawer(drawerState = drawerState, onAddAttachmentDetails = {}) {
-        Scaffold(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .navigationBarsPadding(),
-            topBar = {
-                HomeAppBar(
-                    onMenuClicked = onMenuClicked,
-                    scrollBehavior = scrollBehavior,
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    modifier = Modifier.padding(
-                        end = padding.calculateEndPadding(LayoutDirection.Ltr),
-                        bottom = 50.dp
-                    ),
-                    onClick = navigateToWrite,
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
+    Scaffold(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .navigationBarsPadding(),
+        topBar = {
+            HomeAppBar(
+                scrollBehavior = scrollBehavior,
+            )
+        },
+        content = {
+            padding = it
+            when (jobPostings) {
+                is RequestState.Success -> {
+                    JobSeekerHomeContent(
+                        paddingValues = it,
+                        jobPosting = jobPostings.data,
+                    )
+                }
+
+                is RequestState.Error -> {
+                    EmptyPage(
+                        title = "Error",
+                        subtitle = "${jobPostings.error.message}",
+                    )
+                }
+
+                RequestState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "New Job Icon",
-                        )
-                        Text(text = "Job")
+                        CircularProgressIndicator()
                     }
                 }
-            },
-            content = {
-                padding = it
-                when (jobPostings) {
-                    is RequestState.Success -> {
-                        JobSeekerHomeContent(
-                            paddingValues = it,
-                            jobPosting = jobPostings.data,
-                            onClick = navigateToWriteWithArgs,
-                        )
-                    }
 
-                    is RequestState.Error -> {
-                        EmptyPage(
-                            title = "Error",
-                            subtitle = "${jobPostings.error.message}",
-                        )
-                    }
-
-                    RequestState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-
-                    else -> {}
-                }
-            },
-        )
-    }
+                else -> {}
+            }
+        },
+    )
 }

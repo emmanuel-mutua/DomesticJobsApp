@@ -42,19 +42,19 @@ class JobSeekerHomeViewModel @Inject constructor(
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getAttachmentLogs()
+            getAllJobs()
         }
         viewModelScope.launch {
             connectivity.observe().collect { network = it }
         }
     }
 
-    fun getAttachmentLogs(zonedDateTime: ZonedDateTime? = null) {
+    fun getAllJobs(zonedDateTime: ZonedDateTime? = null) {
         dateIsSelected = zonedDateTime != null
         jobPostings.value = RequestState.Loading
         if (dateIsSelected && zonedDateTime != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                observeFilteredAttachmentLogs(zonedDateTime = zonedDateTime)
+                observeFilteredJobs(zonedDateTime = zonedDateTime)
             }
         } else {
             observeAllJobs()
@@ -67,14 +67,14 @@ class JobSeekerHomeViewModel @Inject constructor(
             if (::filteredLogsJob.isInitialized) {
                 filteredLogsJob.cancelAndJoin()
             }
-            FirebaseJobPostingRepo.getAllJobsPostings(employerId = currentUserId).debounce(2000).collect { result ->
+            FirebaseJobPostingRepo.getAllJobsPostings().debounce(2000).collect { result ->
                 jobPostings.value = result
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun observeFilteredAttachmentLogs(zonedDateTime: ZonedDateTime) {
+    private fun observeFilteredJobs(zonedDateTime: ZonedDateTime) {
         filteredLogsJob = viewModelScope.launch {
             if (::allLogsJob.isInitialized) {
                 allLogsJob.cancelAndJoin()

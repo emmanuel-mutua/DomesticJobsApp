@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -33,86 +32,80 @@ import androidx.compose.ui.unit.dp
 import com.lorraine.hiremequick.data.model.RequestState
 import com.lorraine.hiremequick.data.repository.JobPostings
 import com.lorraine.hiremequick.presentation.employer.components.HomeAppBar
-import com.lorraine.hiremequick.presentation.employer.components.NavigationDrawer
-import java.time.ZonedDateTime
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun EmployerHomeScreen(
     attachmentLogs: JobPostings,
-    drawerState: DrawerState,
-    onMenuClicked: () -> Unit,
-    navigateToWriteWithArgs: (String) -> Unit,
     navigateToWrite: () -> Unit,
 ) {
     var padding by remember { mutableStateOf(PaddingValues()) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    NavigationDrawer(drawerState = drawerState, onAddAttachmentDetails = {}) {
-        Scaffold(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .navigationBarsPadding(),
-            topBar = {
-                HomeAppBar(
-                    onMenuClicked = onMenuClicked,
-                    scrollBehavior = scrollBehavior,
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    modifier = Modifier.padding(
-                        end = padding.calculateEndPadding(LayoutDirection.Ltr),
-                        bottom = 50.dp
-                    ),
-                    onClick = navigateToWrite,
+    Scaffold(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .navigationBarsPadding(),
+        topBar = {
+            HomeAppBar(
+                scrollBehavior = scrollBehavior,
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                modifier = Modifier.padding(
+                    end = padding.calculateEndPadding(LayoutDirection.Ltr),
+                    bottom = 50.dp
+                ),
+                onClick = navigateToWrite,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "New Job Icon",
+                    )
+                    Text(text = "Job")
+                }
+            }
+        },
+        content = {
+            padding = it
+            when (attachmentLogs) {
+                is RequestState.Success -> {
+                    EmployerHomeContent(
+                        paddingValues = it,
+                        jobPosting = attachmentLogs.data,
+                        onClick = {
+                            //navigateToWriteWithArgs
+                            //Disable onclick
+                        },
+                    )
+                }
+
+                is RequestState.Error -> {
+                    EmptyPage(
+                        title = "Error",
+                        subtitle = "${attachmentLogs.error.message}",
+                    )
+                }
+
+                RequestState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "New Job Icon",
-                        )
-                        Text(text = "Job")
+                        CircularProgressIndicator()
                     }
                 }
-            },
-            content = {
-                padding = it
-                when (attachmentLogs) {
-                    is RequestState.Success -> {
-                        EmployerHomeContent(
-                            paddingValues = it,
-                            jobPosting = attachmentLogs.data,
-                            onClick = {
-                                //navigateToWriteWithArgs
-                                      //Disable onclick
-                            },
-                        )
-                    }
 
-                    is RequestState.Error -> {
-                        EmptyPage(
-                            title = "Error",
-                            subtitle = "${attachmentLogs.error.message}",
-                        )
-                    }
-
-                    RequestState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-
-                    else -> {}
-                }
-            },
-        )
-    }
+                else -> {}
+            }
+        },
+    )
 }
+

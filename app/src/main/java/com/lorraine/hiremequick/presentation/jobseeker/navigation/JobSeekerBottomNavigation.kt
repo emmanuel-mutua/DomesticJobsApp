@@ -1,16 +1,11 @@
 package com.lorraine.hiremequick.presentation.jobseeker.navigation
 
-import com.lorraine.hiremequick.presentation.employer.navigation.EmployerHomeDestinations
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -21,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -33,7 +27,6 @@ fun JobSeekerBottomNavigationWithBackStack(
 ) {
     val navigationItems: List<JobSeekerHomeDestinations> = listOf(
         JobSeekerHomeDestinations.Home,
-        JobSeekerHomeDestinations.Search,
         JobSeekerHomeDestinations.JobApplications,
         JobSeekerHomeDestinations.Account,
     )
@@ -47,7 +40,7 @@ fun JobSeekerBottomNavigationWithBackStack(
                 val route = it.destination.route
                 previousBottomNav = when (route) {
                     JobSeekerHomeDestinations.Home.route -> JobSeekerHomeDestinations.Home
-                    JobSeekerHomeDestinations.Search.route -> JobSeekerHomeDestinations.Search
+                    JobSeekerHomeDestinations.MoreDetailsScreen.route -> JobSeekerHomeDestinations.MoreDetailsScreen
                     JobSeekerHomeDestinations.JobApplications.route -> JobSeekerHomeDestinations.JobApplications
                     JobSeekerHomeDestinations.Account.route -> JobSeekerHomeDestinations.Account
                     else -> previousBottomNav
@@ -80,15 +73,17 @@ fun JobSeekerBottomNavigationWithBackStack(
                     }
                 },
                 icon = {
-                    Icon(
-                        painter = painterResource(id = screen.icon),
-                        contentDescription = "${screen.label} icon",
-                        tint = if (screen == currentlySelectedItem) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        },
-                    )
+                    screen.icon?.let { painterResource(id = it) }?.let {
+                        Icon(
+                            painter = it,
+                            contentDescription = "${screen.label} icon",
+                            tint = if (screen == currentlySelectedItem) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            },
+                        )
+                    }
                 },
                 label = {
                     Text(

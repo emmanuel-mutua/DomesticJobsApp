@@ -1,4 +1,5 @@
-package com.lorraine.hiremequick.presentation.employer.components
+package com.lorraine.hiremequick.presentation.jobseeker.moredetails
+
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -20,6 +21,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +36,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.lorraine.hiremequick.data.model.JobPosting
 import java.time.Instant
 import java.time.ZoneId
@@ -41,9 +44,11 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun JobPostingHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
+fun MoreDetailsScreen() {
+    val viewModel : MoreDetailsViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsState()
+    val jobPosting = uiState.selectedJobId
     val localDensity = LocalDensity.current
-    val context = LocalContext.current
     var componentHeight by remember { mutableStateOf(0.dp) }
 
 
@@ -54,7 +59,7 @@ fun JobPostingHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                 interactionSource = remember {
                     MutableInteractionSource()
                 },
-            ) { onClick(jobPosting.jobId) },
+            ) { },
     ) {
         Spacer(modifier = Modifier.width(14.dp))
         Surface(

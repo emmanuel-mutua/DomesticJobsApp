@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.data.model.RequestState
 import com.lorraine.hiremequick.data.repository.JobPostings
 import com.lorraine.hiremequick.presentation.employer.components.HomeAppBar
@@ -37,6 +38,7 @@ import com.lorraine.hiremequick.presentation.employer.components.HomeAppBar
 @Composable
 fun JobSeekerHomeScreen(
     jobPostings: JobPostings,
+    onJobClick : (JobPosting) -> Unit
 ) {
     var padding by remember { mutableStateOf(PaddingValues()) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -57,6 +59,7 @@ fun JobSeekerHomeScreen(
                     JobSeekerHomeContent(
                         paddingValues = it,
                         jobPosting = jobPostings.data,
+                        onJobClick = onJobClick
                     )
                 }
 

@@ -1,22 +1,27 @@
 package com.lorraine.hiremequick.presentation.jobseeker.navigation
 
 import com.lorraine.hiremequick.R
+import com.lorraine.hiremequick.data.model.JobPosting
+import com.lorraine.hiremequick.utils.Contants
 
 sealed class JobSeekerHomeDestinations(
     val route: String,
     val label: String,
-    val icon: Int,
+    val icon: Int?,
 ) {
     object Home : JobSeekerHomeDestinations(
         route = "home",
         label = "Home",
         icon = R.drawable.baseline_home,
     )
-    object Search : JobSeekerHomeDestinations(
-        route = "search",
-        label = "Search",
-        icon = R.drawable.search,
-    )
+    object MoreDetailsScreen : JobSeekerHomeDestinations(
+        route = "moredetails",
+        label = "MoreDetails",
+        icon = null,
+    ){
+        fun passJobPosting(jobPost: JobPosting) =
+            "moredetails?${Contants.MOREDETAILS_SCREEN_ARGUMENT_KEY}=$jobPost"
+    }
     object JobApplications : JobSeekerHomeDestinations(
         route = "JobApplications",
         label = "Applications",

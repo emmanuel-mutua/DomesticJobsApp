@@ -43,7 +43,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
+fun JobPostHolder(jobPosting: JobPosting, onClick: (JobPosting) -> Unit) {
     val localDensity = LocalDensity.current
     val context = LocalContext.current
     var componentHeight by remember { mutableStateOf(0.dp) }
@@ -56,7 +56,7 @@ fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                 interactionSource = remember {
                     MutableInteractionSource()
                 },
-            ) { onClick(jobPosting.jobId) },
+            ) { onClick(jobPosting) },
     ) {
         Spacer(modifier = Modifier.width(14.dp))
         Surface(
@@ -151,7 +151,7 @@ fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                         }
                         Text(
                             text = "Date : ${formatter.format(Instant.ofEpochMilli(jobPosting.applicationDeadline))}",
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.error,
                             style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
                         )
                     }

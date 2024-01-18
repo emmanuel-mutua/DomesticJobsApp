@@ -137,13 +137,24 @@ fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
                         modifier = Modifier.padding(all = 14.dp),
                         text = "Application DeadLine",
                         style = TextStyle(fontSize = MaterialTheme.typography.bodySmall.fontSize),
                     )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val formatter = remember {
+                            DateTimeFormatter.ofPattern("d MMM uuuu", Locale.getDefault())
+                                .withZone(ZoneId.systemDefault())
+                        }
+                        Text(
+                            text = "Date : ${formatter.format(Instant.ofEpochMilli(jobPosting.applicationDeadline))}",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+                        )
+                    }
                 }
             }
         }
@@ -182,12 +193,21 @@ fun DiaryHeader(title: String, time: Instant) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MyClearBox(text : String) {
+fun DateHeader(date: Instant) {
+
+}
+
+@Composable
+fun MyClearBox(text: String) {
     Row(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.medium)
-            .padding(horizontal = 14.dp, vertical =14.dp),
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.medium
+            )
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {

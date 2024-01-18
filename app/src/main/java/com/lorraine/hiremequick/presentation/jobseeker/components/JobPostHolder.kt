@@ -43,7 +43,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun JobPostHolder(jobPosting: JobPosting, onClick: (JobPosting) -> Unit) {
+fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
     val localDensity = LocalDensity.current
     val context = LocalContext.current
     var componentHeight by remember { mutableStateOf(0.dp) }
@@ -56,7 +56,7 @@ fun JobPostHolder(jobPosting: JobPosting, onClick: (JobPosting) -> Unit) {
                 interactionSource = remember {
                     MutableInteractionSource()
                 },
-            ) { onClick(jobPosting) },
+            ) { onClick(jobPosting.jobId) },
     ) {
         Spacer(modifier = Modifier.width(14.dp))
         Surface(

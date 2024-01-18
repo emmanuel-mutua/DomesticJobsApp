@@ -34,7 +34,7 @@ import java.time.LocalDate
 fun JobSeekerHomeContent(
     paddingValues: PaddingValues,
     jobPosting: Map<LocalDate, List<JobPosting>>,
-    onJobClick : (JobPosting) -> Unit
+    onJobClick : (String) -> Unit
 ) {
     if (jobPosting.isNotEmpty()) {
         LazyColumn(

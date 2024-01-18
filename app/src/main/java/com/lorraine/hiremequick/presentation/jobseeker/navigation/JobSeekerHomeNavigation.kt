@@ -1,11 +1,13 @@
 package com.lorraine.hiremequick.presentation.jobseeker.navigation
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +28,8 @@ import com.lorraine.hiremequick.presentation.employer.profile.ProfileScreen
 import com.lorraine.hiremequick.presentation.jobseeker.home.JobSeekerHomeScreen
 import com.lorraine.hiremequick.presentation.jobseeker.home.JobSeekerHomeViewModel
 import com.lorraine.hiremequick.presentation.jobseeker.home.TestScreen
+import com.lorraine.hiremequick.presentation.jobseeker.moredetails.MoreDetailsViewModel
+import com.lorraine.hiremequick.utils.Contants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -38,6 +42,7 @@ fun JobSeekerHomeDashboard(
     val viewModel: AuthViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
 
+
     Scaffold(
         modifier = Modifier
             .fillMaxWidth()
@@ -46,7 +51,10 @@ fun JobSeekerHomeDashboard(
         bottomBar = {
             val currentRoute =
                 navController.currentBackStackEntryAsState()?.value?.destination?.route
-            if (currentRoute != JobSeekerHomeDestinations.MoreDetailsScreen.route){
+            if (currentRoute == JobSeekerHomeDestinations.Home.route ||
+            currentRoute == JobSeekerHomeDestinations.JobApplications.route ||
+            currentRoute == JobSeekerHomeDestinations.Account.route
+                ){
                 JobSeekerBottomNavigationWithBackStack(navController = navController)
             }
         },
@@ -55,13 +63,18 @@ fun JobSeekerHomeDashboard(
                 navController = navController,
                 startDestination = JobSeekerHomeDestinations.Home.route,
             ) {
+
                 homeContent(
                     onJobClick = {
                         //save job posting to state
-                        navController.navigate(JobSeekerHomeDestinations.MoreDetailsScreen.passJobPosting(it))
+                        navController.navigate("${JobSeekerHomeDestinations.MoreDetailsScreen.route}/$it")
                     }
                 )
-                moreDetailsScreen()
+                moreDetailsScreen(
+                    navigateBack = {
+                        navController.popBackStack()
+                    }
+                )
                 jobApplications()
                 account(
                     scope = scope,
@@ -74,7 +87,7 @@ fun JobSeekerHomeDashboard(
 }
 
 fun NavGraphBuilder.homeContent(
-    onJobClick: (JobPosting) -> Unit
+    onJobClick: (String) -> Unit
 ) {
     composable(route = EmployerHomeDestinations.Home.route) {
         val viewModel: JobSeekerHomeViewModel = hiltViewModel()
@@ -85,9 +98,15 @@ fun NavGraphBuilder.homeContent(
         )
     }
 }
-fun NavGraphBuilder.moreDetailsScreen() {
-    composable(JobSeekerHomeDestinations.MoreDetailsScreen.route) {
-        MoreDetailsNavHost()
+fun NavGraphBuilder.moreDetailsScreen(
+    navigateBack : () -> Unit
+) {
+    composable("${JobSeekerHomeDestinations.MoreDetailsScreen.route}/{jobPost}") {
+        val jobPostingId : String? = it.arguments?.getString("jobPost")
+        val moreDetailsVm : MoreDetailsViewModel = hiltViewModel()
+        moreDetailsVm.getSelectedJob(jobPostingId)
+        val jobPosting = moreDetailsVm.uiState.collectAsState().value.selectedJob
+        MoreDetailsNavHost(jobPosting = jobPosting, navigateBack = navigateBack)
     }
 }
 fun NavGraphBuilder.jobApplications() {

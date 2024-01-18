@@ -107,14 +107,16 @@ object FirebaseJobPostingRepo : JobPostingRepo {
             flow { emit(RequestState.Error(e)) }
         }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getSelectedJob(jobId: String): RequestState<JobPosting> =
         try {
-            Log.d("ATTACHID", "getSelectedJob:$jobId ")
             val document = jobPostingCollection
-                .whereEqualTo("id", jobId)
+                .whereEqualTo("jobId", jobId)
                 .get().await()
-            val jobPosting = document.documents[0].toObject(JobPosting::class.java)
+            val jobPosting = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                document.documents[0].toObject(JobPosting::class.java)
+            } else {
+                TODO("VERSION.SDK_INT < O")
+            }
             Log.d("TAG", "getSelectedJob: ${jobPosting?.title}")
             if (jobPosting != null) {
                 RequestState.Success(jobPosting)

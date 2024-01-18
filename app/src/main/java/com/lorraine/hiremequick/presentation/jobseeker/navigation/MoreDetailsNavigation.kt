@@ -1,6 +1,7 @@
 package com.lorraine.hiremequick.presentation.jobseeker.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -9,12 +10,14 @@ import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.presentation.jobseeker.home.TestScreen
 import com.lorraine.hiremequick.presentation.jobseeker.moredetails.ApplyJobScreen
 import com.lorraine.hiremequick.presentation.jobseeker.moredetails.MoreDetailsScreen
+import com.lorraine.hiremequick.presentation.jobseeker.moredetails.MoreDetailsViewModel
+import com.lorraine.hiremequick.utils.Contants
 
 sealed class MoreDetailsNavigation(
     val route: String
 ) {
     object MoreDetailsScreen : MoreDetailsNavigation(
-        route = "home",
+        route = "moredetailhome",
     )
 
     object Apply : MoreDetailsNavigation(
@@ -23,7 +26,7 @@ sealed class MoreDetailsNavigation(
 }
 
 @Composable
-fun MoreDetailsNavHost() {
+fun MoreDetailsNavHost(jobPosting: JobPosting, navigateBack: () ->Unit) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -32,7 +35,7 @@ fun MoreDetailsNavHost() {
         composable(
             MoreDetailsNavigation.MoreDetailsScreen.route
         ) {
-            MoreDetailsScreen()
+            MoreDetailsScreen(jobPosting = jobPosting, navigateBack = navigateBack)
         }
         composable(MoreDetailsNavigation.Apply.route) {
             ApplyJobScreen()

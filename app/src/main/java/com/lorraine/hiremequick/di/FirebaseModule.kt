@@ -36,4 +36,5 @@ class FirebaseModule {
     fun provideNetworkConnectivityObserver(
         @ApplicationContext context: Context
     ) = NetworkConnectivityObserver(context = context)
+
 }

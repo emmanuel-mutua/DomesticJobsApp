@@ -38,7 +38,7 @@ import com.lorraine.hiremequick.presentation.employer.components.HomeAppBar
 @Composable
 fun JobSeekerHomeScreen(
     jobPostings: JobPostings,
-    onJobClick : (JobPosting) -> Unit
+    onJobClick : (String) -> Unit
 ) {
     var padding by remember { mutableStateOf(PaddingValues()) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()

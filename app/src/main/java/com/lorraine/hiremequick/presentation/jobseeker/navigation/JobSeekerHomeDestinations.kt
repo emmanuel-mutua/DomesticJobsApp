@@ -18,10 +18,8 @@ sealed class JobSeekerHomeDestinations(
         route = "moredetails",
         label = "MoreDetails",
         icon = null,
-    ){
-        fun passJobPosting(jobPost: JobPosting) =
-            "moredetails?${Contants.MOREDETAILS_SCREEN_ARGUMENT_KEY}=$jobPost"
-    }
+    )
+
     object JobApplications : JobSeekerHomeDestinations(
         route = "JobApplications",
         label = "Applications",

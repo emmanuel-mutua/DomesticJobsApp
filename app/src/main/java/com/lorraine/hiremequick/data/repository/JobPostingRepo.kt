@@ -14,4 +14,5 @@ interface JobPostingRepo {
     suspend fun updateJobPosting(jobPosting: JobPosting): RequestState<JobPosting>
     suspend fun deleteJobPosting(id: String): RequestState<Boolean>
     suspend fun deleteJobPosting(): RequestState<Boolean>
+    suspend fun addApplicantIdToJobPosting(applicantId : String,  jobId: String): RequestState<Boolean>
 }

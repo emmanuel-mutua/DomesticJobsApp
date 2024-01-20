@@ -3,6 +3,7 @@ package com.lorraine.hiremequick.data.repository
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.data.model.RequestState
@@ -128,9 +129,10 @@ object FirebaseJobPostingRepo : JobPostingRepo {
         }
 
     override suspend fun insertJob(jobPosting: JobPosting): RequestState<JobPosting> {
-        return try { jobPostingCollection.document(jobPosting.jobId).set(jobPosting).await()
-            val insertedLog = jobPosting
-            RequestState.Success(insertedLog)
+        return try {
+            jobPostingCollection.document(jobPosting.jobId).set(jobPosting).await()
+            val insertedJob = jobPosting
+            RequestState.Success(insertedJob)
         } catch (e: Exception) {
             RequestState.Error(e)
         }
@@ -157,5 +159,22 @@ object FirebaseJobPostingRepo : JobPostingRepo {
 
     override suspend fun deleteJobPosting(): RequestState<Boolean> {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun addApplicantIdToJobPosting(
+        applicantId: String,
+        jobId: String
+    ): RequestState<Boolean> {
+
+        return try {
+            jobPostingCollection.document(jobId)
+                .update("applicantIds", FieldValue.arrayUnion(applicantId))
+                .addOnSuccessListener {
+                    RequestState.Success(true)
+                }
+            RequestState.Success(true)
+        } catch (e: Exception) {
+            RequestState.Error(e)
+        }
     }
 }

@@ -37,6 +37,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lorraine.hiremequick.data.model.JobPosting
+import com.lorraine.hiremequick.presentation.components.TextFieldWithoutBorders
 import com.lorraine.hiremequick.presentation.employer.components.DatePickerIcon
 import java.time.ZonedDateTime
 
@@ -84,19 +85,19 @@ fun AddJobPostingContent(
                     color = MaterialTheme.colorScheme.primary
                 )
             )
-            JobPostingTextField(
+            TextFieldWithoutBorders(
                 value = uiState.title,
                 text = "Write Job title",
                 onValueChange = { onTitleChanged.invoke(it) })
-            JobPostingTextField(
+            TextFieldWithoutBorders(
                 value = uiState.description,
                 text = "Write description here (Skills, Experience ...)",
                 onValueChange = { onDescriptionChanged.invoke(it) })
-            JobPostingTextField(
+            TextFieldWithoutBorders(
                 value = uiState.modeOfWork,
                 text = "Specify (FullTime/PartTime)",
                 onValueChange = { onModeOfWorkChanged.invoke(it) })
-            JobPostingTextField(
+            TextFieldWithoutBorders(
                 value = uiState.numberOfEployeesNeeded,
                 text = "Number of employees needed (1,2 ..)",
                 onValueChange = { onNumberOfEmployeesUpdated.invoke(it) })
@@ -108,11 +109,11 @@ fun AddJobPostingContent(
                     color = MaterialTheme.colorScheme.primary
                 )
             )
-            JobPostingTextField(
+            TextFieldWithoutBorders(
                 value = uiState.nameOfCountry,
                 text = "Enter the country",
                 onValueChange = { onNameOfCountryChanged.invoke(it) })
-            JobPostingTextField(
+            TextFieldWithoutBorders(
                 value = uiState.nameOfCity,
                 text = "Enter city name",
                 onValueChange = { onNameOfCityChanged.invoke(it) })
@@ -174,34 +175,3 @@ fun AddJobPostingContent(
     }
 }
 
-@Composable
-fun JobPostingTextField(
-    value: String,
-    text: String,
-    onValueChange: (String) -> Unit
-) {
-    val focusManager = LocalFocusManager.current
-    TextField(
-        modifier = Modifier.fillMaxWidth(),
-        value = value,
-        onValueChange = { onValueChange.invoke(it) },
-        placeholder = { Text(text = text) },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = Color.Unspecified,
-            disabledIndicatorColor = Color.Unspecified,
-            unfocusedIndicatorColor = Color.Unspecified,
-            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-        ),
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Next,
-        ),
-        keyboardActions = KeyboardActions(
-            onNext = {
-                focusManager.clearFocus()
-            },
-        ),
-    )
-}

@@ -32,6 +32,7 @@ import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.data.model.RequestState
 import com.lorraine.hiremequick.data.repository.JobPostings
 import com.lorraine.hiremequick.presentation.employer.components.HomeAppBar
+import com.lorraine.hiremequick.presentation.jobseeker.components.JobSeekerTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -48,7 +49,7 @@ fun JobSeekerHomeScreen(
             .statusBarsPadding()
             .navigationBarsPadding(),
         topBar = {
-            HomeAppBar(
+            JobSeekerTopBar(
                 scrollBehavior = scrollBehavior,
             )
         },

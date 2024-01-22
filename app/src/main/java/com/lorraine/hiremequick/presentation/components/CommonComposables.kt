@@ -162,20 +162,16 @@ fun ContactHolder(
         modifier = Modifier
             .clickable {
                 onClick.invoke()
-            }
-            .background(
-                MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.medium
-            ),
+            },
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(imageVector = imageVector, contentDescription = "Contact box")
+        Icon(imageVector = imageVector, tint = MaterialTheme.colorScheme.secondary,contentDescription = "Contact box")
         Text(
             text = text,
             style = TextStyle(
                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.secondary
             ),
         )
     }

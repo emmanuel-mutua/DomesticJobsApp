@@ -1,4 +1,4 @@
-package com.lorraine.hiremequick.presentation.employer.applications
+package com.lorraine.hiremequick.presentation.jobseeker.applications
 
 
 import android.annotation.SuppressLint
@@ -30,18 +30,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lorraine.hiremequick.presentation.employer.components.HomeAppBar
-import com.lorraine.hiremequick.presentation.jobseeker.applications.JobSeekerApplicationsUiState
 import com.lorraine.hiremequick.presentation.jobseeker.moredetails.LoadingScreen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ApplicationsHomeScreen(
+fun JobSeekerApplicationsHomeScreen(
     jobApplicationsUiState: JobSeekerApplicationsUiState,
-    sendMessage: (String) -> Unit,
-    sendEmail: (String) -> Unit,
-    call: (String) -> Unit,
 ) {
     var padding by remember { mutableStateOf(PaddingValues()) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -69,9 +65,6 @@ fun ApplicationsHomeScreen(
                         //Applications Holder
                         JobApplicationHolder(
                             jobApplication = jobApplicationDetails,
-                            sendEmail = sendEmail,
-                            sendMessage = sendMessage,
-                            call = call,
                         )
                         HorizontalDivider(
                             modifier = Modifier
@@ -84,11 +77,9 @@ fun ApplicationsHomeScreen(
             } else if (jobApplicationsUiState.isLoading) {
                 LoadingScreen()
             } else if (jobApplicationsUiState.isError) {
-                com.lorraine.hiremequick.presentation.jobseeker.applications.ErrorScreen(
-                    jobApplicationsUiState.errorMessage
-                )
+                ErrorScreen(jobApplicationsUiState.errorMessage)
             } else {
-                com.lorraine.hiremequick.presentation.jobseeker.applications.EmptyPage()
+                EmptyPage()
             }
         },
     )

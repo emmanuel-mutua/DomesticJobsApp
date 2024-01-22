@@ -1,4 +1,4 @@
-package com.lorraine.hiremequick.presentation.employer.applications
+package com.lorraine.hiremequick.presentation.jobseeker.applications
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -35,9 +35,6 @@ import com.lorraine.hiremequick.presentation.components.ContactHolder
 @Composable
 fun JobApplicationHolder(
     jobApplication: JobApplicationDetails,
-    sendMessage: (String) -> Unit,
-    sendEmail: (String) -> Unit,
-    call: (String) -> Unit,
 ) {
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
@@ -62,7 +59,7 @@ fun JobApplicationHolder(
             tonalElevation = 0.dp,
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                com.lorraine.hiremequick.presentation.jobseeker.applications.JobApplicationHolderHeader(
+                JobApplicationHolderHeader(
                     title = jobApplication.jobTitle,
                 )
                 Text(text = "Experience Description", style =TextStyle(fontSize = MaterialTheme.typography.titleLarge.fontSize))
@@ -71,24 +68,7 @@ fun JobApplicationHolder(
                     text = jobApplication.experienceDescription,
                     style = TextStyle(fontSize = MaterialTheme.typography.bodyLarge.fontSize),
                 )
-                Text(text = "Contact ${jobApplication.applicantName}", style =TextStyle(fontSize = MaterialTheme.typography.titleLarge.fontSize))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    ContactHolder(imageVector = Icons.Default.Email, text = "Send Email") {
-                        sendEmail.invoke(jobApplication.applicantEmail)
-                    }
-                    ContactHolder(imageVector = Icons.Default.Call, text = "Call") {
-                        call.invoke(jobApplication.applicantPhoneNumber)
-                    }
-                    ContactHolder(imageVector = Icons.Default.MailOutline, text = "Send Message") {
-                        sendMessage.invoke(jobApplication.applicantPhoneNumber)
-                    }
-                }
+
             }
         }
     }

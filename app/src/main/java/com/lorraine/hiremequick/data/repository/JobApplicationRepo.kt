@@ -12,6 +12,7 @@ import kotlinx.coroutines.tasks.await
 interface JobApplicationRepo {
     suspend fun insertJobApplication(jobApplicationDetails: JobApplicationDetails): RequestState<JobApplicationDetails>
     suspend fun getJobApplications(employerId: String): RequestState<Flow<List<JobApplicationDetails>>>
+    suspend fun getJobSeekerApplications(jobSeekerId: String): RequestState<Flow<List<JobApplicationDetails>>>
 }
 
 object JobApplicationRepoImpl : JobApplicationRepo {
@@ -37,5 +38,16 @@ object JobApplicationRepoImpl : JobApplicationRepo {
             RequestState.Error(e)
         }
     }
+
+    override suspend fun getJobSeekerApplications(jobSeekerId: String): RequestState<Flow<List<JobApplicationDetails>>> {
+        return try {
+            val applications =
+                jobApplicationCollection.whereEqualTo("applicantId", jobSeekerId).snapshots().map {
+                    it.toObjects(JobApplicationDetails::class.java)
+                }
+            return RequestState.Success(applications)
+        } catch (e: Exception) {
+            RequestState.Error(e)
+        }    }
 
 }

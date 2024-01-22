@@ -1,8 +1,5 @@
-package com.lorraine.hiremequick.presentation.employer.applications
+package com.lorraine.hiremequick.presentation.jobseeker.applications
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,7 +8,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.lorraine.hiremequick.data.model.JobApplicationDetails
 import com.lorraine.hiremequick.data.model.RequestState
 import com.lorraine.hiremequick.data.repository.JobApplicationRepoImpl
-import com.lorraine.hiremequick.presentation.jobseeker.applications.JobSeekerApplicationsUiState
+import com.lorraine.hiremequick.presentation.employer.applications.JobApplicationsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,19 +18,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class JobApplicationsViewModel @Inject constructor(
+class MyJobApplicationsViewModel @Inject constructor(
 
 ) : ViewModel() {
     private var _uiState = MutableStateFlow(JobSeekerApplicationsUiState())
     val uiState = _uiState.asStateFlow()
 
     val currentUser : FirebaseUser? = FirebaseAuth.getInstance().currentUser
-    val employerId  = currentUser?.uid!!
+    val jobSeekerId  = currentUser?.uid!!
     init {
-        getJobApplications(employerId)
+        getJobApplications(jobSeekerId)
     }
 
-    fun getJobApplications(employerId: String) {
+    fun getJobApplications(jobSeekerId: String) {
         _uiState.update {
             it.copy(
                 isLoading = true
@@ -41,7 +38,7 @@ class JobApplicationsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             Log.d("JobApplicationsViewModel", ": Getting data")
-            val applications = JobApplicationRepoImpl.getJobApplications(employerId)
+            val applications = JobApplicationRepoImpl.getJobSeekerApplications(jobSeekerId)
             when (applications) {
                 is RequestState.Success -> {
                     applications.data.collectLatest { jobApplications ->
@@ -66,24 +63,9 @@ class JobApplicationsViewModel @Inject constructor(
             }
         }
     }
-    fun sendMessage(context: Context, phoneNumber: String) {
-        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$phoneNumber"))
-        context.startActivity(Intent.createChooser(intent, "Choose a messaging app"))
-    }
-
-    fun callApplicant(context: Context, phoneNumber: String) {
-        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phoneNumber"))
-        context.startActivity(Intent.createChooser(intent, "Choose a calling app"))
-    }
-
-    fun sendEmail(context: Context, emailAddress: String) {
-        val intent = Intent(Intent.ACTION_SENDTO)
-        intent.data = Uri.parse("mailto:$emailAddress")
-        context.startActivity(Intent.createChooser(intent, "Send email"))
-    }
 }
 
-data class JobApplicationsUiState(
+data class JobSeekerApplicationsUiState(
     val jobApplications: List<JobApplicationDetails> = emptyList(),
     val isLoading: Boolean = false,
     val isError: Boolean = false,

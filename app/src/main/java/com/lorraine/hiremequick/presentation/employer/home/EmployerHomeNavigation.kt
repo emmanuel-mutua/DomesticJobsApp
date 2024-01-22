@@ -31,6 +31,7 @@ import com.lorraine.hiremequick.presentation.employer.applications.JobApplicatio
 import com.lorraine.hiremequick.presentation.employer.navigation.BottomNavigationWithBackStack
 import com.lorraine.hiremequick.presentation.employer.navigation.EmployerHomeDestinations
 import com.lorraine.hiremequick.presentation.employer.profile.ProfileScreen
+import com.lorraine.hiremequick.presentation.employer.profile.ProfileViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -237,14 +238,17 @@ fun NavGraphBuilder.account(
 ) {
     composable(route = EmployerHomeDestinations.Account.route) {
         var dialogOpened by remember { mutableStateOf(false) }
+        val profileViewModel : ProfileViewModel = hiltViewModel()
+        val uiState by profileViewModel.employerUiState.collectAsState()
         ProfileScreen(
             onSignOutClicked = {
                 dialogOpened = true
             },
+            uiState = uiState
         )
         DisplayAlertDialog(
             title = "Sign Out",
-            message = "Are you sure you want to sign out?",
+            message = "Are you sure you want to sign out and exit?",
             dialogOpened = dialogOpened,
             onCloseDialog = {
                 dialogOpened = false
@@ -263,17 +267,18 @@ fun NavGraphBuilder.applications() {
     composable(EmployerHomeDestinations.Notifications.route) {
         val jobApplicationsViewModel : JobApplicationsViewModel = hiltViewModel()
         val jobApplicationsUiState by jobApplicationsViewModel.uiState.collectAsState()
+        val context = LocalContext.current
         ApplicationsHomeScreen(
             jobApplicationsUiState = jobApplicationsUiState,
             sendMessage = { phoneNumber ->
-                jobApplicationsViewModel.sendMessage(phoneNumber = phoneNumber)
+                jobApplicationsViewModel.sendMessage(phoneNumber = phoneNumber, context = context)
             },
             sendEmail = {
                 emailAddress ->
-                jobApplicationsViewModel.sendEmail(emailAddress = emailAddress)
+                jobApplicationsViewModel.sendEmail(emailAddress = emailAddress, context = context)
             }
         ) { phoneNumber ->
-            jobApplicationsViewModel.callApplicant(phoneNumber = phoneNumber)
+            jobApplicationsViewModel.callApplicant(phoneNumber = phoneNumber, context = context)
         }
     }
 }

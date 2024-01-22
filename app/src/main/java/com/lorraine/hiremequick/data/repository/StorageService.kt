@@ -4,10 +4,10 @@ import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lorraine.hiremequick.data.Response
+import com.lorraine.hiremequick.data.model.EmployerData
 import com.lorraine.hiremequick.data.model.JobPosting
+import com.lorraine.hiremequick.data.model.JobSeekerData
 import com.lorraine.hiremequick.data.model.RequestState
-import com.lorraine.hiremequick.presentation.auth.EmployerData
-import com.lorraine.hiremequick.presentation.auth.JobSeekerData
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 

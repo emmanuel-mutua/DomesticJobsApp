@@ -6,7 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.lorraine.hiremequick.data.Response
+import com.lorraine.hiremequick.data.model.EmployerData
+import com.lorraine.hiremequick.data.model.JobSeekerData
 import com.lorraine.hiremequick.data.repository.AuthRepository
+import com.lorraine.hiremequick.data.repository.JobApplicationRepoImpl
 import com.lorraine.hiremequick.data.repository.StorageService
 import com.lorraine.hiremequick.utils.Contants
 import com.lorraine.hiremequick.utils.Contants.JobSeeker
@@ -24,8 +27,13 @@ class AuthViewModel @Inject constructor(
     private val authRepo: AuthRepository,
     private val storageService: StorageService,
 ) : ViewModel() {
+
+    init {
+        reloadUser()
+    }
     private var _registerState = MutableStateFlow(AuthStateData())
     val registerState = _registerState.asStateFlow()
+
     val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
     private val currentUserId = currentUser?.uid ?: ""
     private var _jobSeekerData = MutableStateFlow(JobSeekerData())
@@ -156,13 +164,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun setRegNo(registrationNumber: String) {
-        _jobSeekerData.update {
-            it.copy(
-                registrationNumber = registrationNumber,
-            )
-        }
-    }
 
     fun getRoleFromUserData(onDataLoaded: (String) -> Unit) {
         _registerState.update {
@@ -204,19 +205,3 @@ data class AuthStateData(
     val isSignedIn: Boolean = false,
 )
 
-data class JobSeekerData(
-    val uid: String = "",
-    val fullName: String = "",
-    val email: String = "",
-    val registrationNumber: String = "",
-    val phoneNumber: String = "",
-    val role: String = "",
-)
-
-data class EmployerData(
-    val uid: String = "",
-    val fullName: String = "",
-    val email: String = "",
-    val phoneNumber: String = "",
-    val role: String = "",
-)

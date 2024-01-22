@@ -1,7 +1,6 @@
 package com.lorraine.hiremequick.presentation.jobseeker.navigation
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -20,16 +19,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.presentation.auth.AuthViewModel
 import com.lorraine.hiremequick.presentation.components.DisplayAlertDialog
 import com.lorraine.hiremequick.presentation.employer.navigation.EmployerHomeDestinations
-import com.lorraine.hiremequick.presentation.employer.profile.ProfileScreen
+import com.lorraine.hiremequick.presentation.jobseeker.applications.JobSeekerApplicationsHomeScreen
+import com.lorraine.hiremequick.presentation.jobseeker.applications.MyJobApplicationsViewModel
 import com.lorraine.hiremequick.presentation.jobseeker.home.JobSeekerHomeScreen
 import com.lorraine.hiremequick.presentation.jobseeker.home.JobSeekerHomeViewModel
+import com.lorraine.hiremequick.presentation.jobseeker.profile.ProfileScreen
+import com.lorraine.hiremequick.presentation.jobseeker.profile.ProfileViewModel
 import com.lorraine.hiremequick.presentation.jobseeker.home.TestScreen
 import com.lorraine.hiremequick.presentation.jobseeker.moredetails.MoreDetailsViewModel
-import com.lorraine.hiremequick.utils.Contants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -111,7 +111,11 @@ fun NavGraphBuilder.moreDetailsScreen(
 }
 fun NavGraphBuilder.jobApplications() {
     composable(JobSeekerHomeDestinations.JobApplications.route) {
-        TestScreen(text = "Job Applications")
+        val vm : MyJobApplicationsViewModel = hiltViewModel()
+        val uiState by vm.uiState.collectAsState()
+        JobSeekerApplicationsHomeScreen(
+            jobApplicationsUiState = uiState
+        )
     }
 }
 
@@ -123,14 +127,17 @@ fun NavGraphBuilder.account(
 ) {
     composable(route = JobSeekerHomeDestinations.Account.route) {
         var dialogOpened by remember { mutableStateOf(false) }
+        val profileViewModel: ProfileViewModel = hiltViewModel()
+        val uiState by profileViewModel.jobSeekerUiState.collectAsState()
         ProfileScreen(
+            uiState = uiState,
             onSignOutClicked = {
                 dialogOpened = true
-            },
+            }
         )
         DisplayAlertDialog(
             title = "Sign Out",
-            message = "Are you sure you want to sign out?",
+            message = "Are you sure you want to sign out and exit?",
             dialogOpened = dialogOpened,
             onCloseDialog = {
                 dialogOpened = false

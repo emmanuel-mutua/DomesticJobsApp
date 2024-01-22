@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lorraine.hiremequick.data.model.JobPosting
+import com.lorraine.hiremequick.presentation.components.MyClearBox
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -197,22 +198,4 @@ fun DateHeader(date: Instant) {
 
 }
 
-@Composable
-fun MyClearBox(text: String) {
-    Row(
-        modifier = Modifier
-            .background(
-                MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.medium
-            )
-            .padding(horizontal = 14.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = text,
-            style = TextStyle(fontSize = MaterialTheme.typography.titleMedium.fontSize),
-        )
-    }
-}
 

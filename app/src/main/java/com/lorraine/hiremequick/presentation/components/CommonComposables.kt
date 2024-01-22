@@ -1,11 +1,18 @@
 package com.lorraine.hiremequick.presentation.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,10 +26,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -67,8 +77,7 @@ fun PassWordField(
         onValueChange = {
             onValueChange(it)
         },
-        singleLine = true
-        ,
+        singleLine = true,
         label = { Text(label) },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -122,6 +131,54 @@ fun TextFieldWithoutBorders(
             },
         ),
     )
+}
+
+@Composable
+fun MyClearBox(text: String) {
+    Row(
+        modifier = Modifier
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.medium
+            )
+            .padding(horizontal = 14.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = TextStyle(fontSize = MaterialTheme.typography.titleMedium.fontSize),
+        )
+    }
+}
+
+@Composable
+fun ContactHolder(
+    imageVector: ImageVector,
+    text: String,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .clickable {
+                onClick.invoke()
+            }
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.medium
+            ),
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(imageVector = imageVector, contentDescription = "Contact box")
+        Text(
+            text = text,
+            style = TextStyle(
+                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                color = MaterialTheme.colorScheme.primary
+            ),
+        )
+    }
 }
 
 @Composable

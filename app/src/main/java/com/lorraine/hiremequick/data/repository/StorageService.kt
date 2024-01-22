@@ -11,7 +11,6 @@ import com.lorraine.hiremequick.presentation.auth.JobSeekerData
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 
-typealias AddUserResponse = Response<Boolean>
 typealias JobPostings = RequestState<Map<LocalDate, List<JobPosting>>>
 
 interface StorageService {

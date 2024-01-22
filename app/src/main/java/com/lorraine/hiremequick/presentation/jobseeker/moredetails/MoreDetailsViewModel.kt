@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.lorraine.hiremequick.data.model.JobApplicationDetails
 import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.data.model.RequestState
 import com.lorraine.hiremequick.data.repository.FirebaseJobPostingRepo
@@ -156,16 +157,6 @@ class MoreDetailsViewModel @Inject constructor(
 
 }
 
-data class JobApplicationDetails(
-    val applicantName: String = "",
-    val applicantEmail: String = "",
-    val applicantPhoneNumber: String = "",
-    val experienceDescription: String = "",
-    val jobTitle: String = "",
-    val employerId: String = "",
-    val selectedJobId: String = "",
-    val applicantId: String = ""
-)
 
 data class UiState(
     val selectedJob: JobPosting,

@@ -5,9 +5,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,6 +26,8 @@ import com.lorraine.hiremequick.presentation.components.DisplayAlertDialog
 import com.lorraine.hiremequick.presentation.employer.add.AddJobScreen
 import com.lorraine.hiremequick.presentation.employer.add.AddLogViewModel
 import com.lorraine.hiremequick.presentation.employer.add.UpdateJobScreen
+import com.lorraine.hiremequick.presentation.employer.applications.ApplicationsHomeScreen
+import com.lorraine.hiremequick.presentation.employer.applications.JobApplicationsViewModel
 import com.lorraine.hiremequick.presentation.employer.navigation.BottomNavigationWithBackStack
 import com.lorraine.hiremequick.presentation.employer.navigation.EmployerHomeDestinations
 import com.lorraine.hiremequick.presentation.employer.profile.ProfileScreen
@@ -44,8 +44,10 @@ fun EmployerHomeScreen(
     val scope = rememberCoroutineScope()
 
     Scaffold(
-        modifier = Modifier.fillMaxWidth()
-            .statusBarsPadding().navigationBarsPadding(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .navigationBarsPadding(),
         bottomBar = {
             val currentRoute =
                 navController.currentBackStackEntryAsState()?.value?.destination?.route
@@ -69,7 +71,7 @@ fun EmployerHomeScreen(
                 update(
                     onBackPressed = { navController.popBackStack() },
                 )
-                notifications()
+                applications()
                 account(
                     scope = scope,
                     navigateToLogin = navigateToLogin,
@@ -257,8 +259,21 @@ fun NavGraphBuilder.account(
     }
 }
 
-fun NavGraphBuilder.notifications() {
+fun NavGraphBuilder.applications() {
     composable(EmployerHomeDestinations.Notifications.route) {
-        TestScreen(text = "No recent applicants")
+        val jobApplicationsViewModel : JobApplicationsViewModel = hiltViewModel()
+        val jobApplicationsUiState by jobApplicationsViewModel.uiState.collectAsState()
+        ApplicationsHomeScreen(
+            jobApplicationsUiState = jobApplicationsUiState,
+            sendMessage = { phoneNumber ->
+                jobApplicationsViewModel.sendMessage(phoneNumber = phoneNumber)
+            },
+            sendEmail = {
+                emailAddress ->
+                jobApplicationsViewModel.sendEmail(emailAddress = emailAddress)
+            }
+        ) { phoneNumber ->
+            jobApplicationsViewModel.callApplicant(phoneNumber = phoneNumber)
+        }
     }
 }

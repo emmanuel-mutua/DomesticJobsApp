@@ -11,7 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.maxkeppeker.sheets.core.models.base.rememberSheetState
+import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
@@ -27,8 +27,8 @@ import java.time.ZonedDateTime
 fun DatePickerIcon(
     onDateTimeUpdated: (ZonedDateTime) -> Unit,
 ) {
-    val dateDialog = rememberSheetState()
-    val timeDialog = rememberSheetState()
+    val dateDialog = rememberUseCaseState()
+    val timeDialog = rememberUseCaseState()
     var currentDate by remember {
         mutableStateOf(LocalDate.now())
     }

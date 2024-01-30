@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +52,7 @@ import com.lorraine.hiremequick.presentation.components.MyOutlinedTextField
 import com.lorraine.hiremequick.presentation.components.PassWordField
 import com.lorraine.hiremequick.ui.theme.AttachmentAppTheme
 import com.lorraine.hiremequick.utils.Contants
+import kotlinx.coroutines.flow.collect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -62,15 +64,34 @@ fun LoginScreen(
     navigateToHome: () -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
-    val isLoading = registerState.isLoading
+    var isLoading by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
+    LaunchedEffect(key1 = true) {
+        viewModel.signInEventResponse.collect { event ->
+            when (event) {
+                is SignInEventResponse.Loading -> {
+                    isLoading = true
+                }
+
+                is SignInEventResponse.Message -> {
+                    isLoading = false
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+
+                is SignInEventResponse.Success -> {
+                    isLoading = false
+                    Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show()
+                    navigateToHome()
+                }
+            }
+        }
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
-        ,
+            .statusBarsPadding(),
         topBar = {
             TopAppBar(title = { Text(text = "Login") },
                 navigationIcon = {
@@ -86,88 +107,80 @@ fun LoginScreen(
                 })
         }
     ) {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(state = rememberScrollState(), reverseScrolling = true),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .verticalScroll(state = rememberScrollState(), reverseScrolling = true),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .fillMaxWidth()
+                    .weight(1f)
             ) {
-                Box(
+                Image(
+                    painter = painterResource(id = R.drawable.login),
+                    contentDescription = "Login Image",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.login),
-                        contentDescription = "Login Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(MaterialTheme.shapes.small)
-                    )
-                }
-
-                MyOutlinedTextField(
-                    value = email,
-                    placeHolder = "Email",
-                    onValueChange = { email = it },
-                    isError = false,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                    ),
+                        .fillMaxSize()
+                        .clip(MaterialTheme.shapes.small)
                 )
-                Spacer(modifier = Modifier.height(10.dp))
+            }
 
-                PassWordField(
-                    isPasswordVisible = passwordVisible,
-                    passwordValue = password,
-                    label = "Password",
-                    isError = false,
-                    onValueChange = { password = it },
-                )
+            MyOutlinedTextField(
+                value = email,
+                placeHolder = "Email",
+                onValueChange = { email = it },
+                isError = false,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                ),
+            )
+            Spacer(modifier = Modifier.height(10.dp))
 
-                Spacer(modifier = Modifier.height(50.dp))
-                Button(
-                    onClick = {
-                        if (email == "" || password == "") {
-                            Toast.makeText(context, "All fields required", Toast.LENGTH_SHORT)
-                                .show()
-                            return@Button
-                        }
-                        viewModel.signInEmailAndPassword(email, password) {
-                            if (registerState.isSignedIn) {
-                                Toast.makeText(context, registerState.message, Toast.LENGTH_SHORT)
-                                    .show()
-                                navigateToHome()
-                            } else {
-                                Toast.makeText(context, registerState.message, Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                        }
-                    },
-                    shape = RoundedCornerShape(16),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
-                ) {
-                    if (!isLoading) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            text = "Login",
-                            textAlign = TextAlign.Center,
-                            fontSize = 18.sp,
-                        )
-                    } else {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
+            PassWordField(
+                isPasswordVisible = passwordVisible,
+                passwordValue = password,
+                label = "Password",
+                isError = false,
+                onValueChange = { password = it },
+            )
+
+            Spacer(modifier = Modifier.height(50.dp))
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    if (email == "" || password == "") {
+                        Toast.makeText(context, "All fields required", Toast.LENGTH_SHORT)
+                            .show()
+                        return@Button
                     }
+                    viewModel.signInEmailAndPassword(email, password)
+                },
+                shape = RoundedCornerShape(16),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+            ) {
+                if (!isLoading) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        text = "Login",
+                        textAlign = TextAlign.Center,
+                        fontSize = 18.sp,
+                    )
+                } else {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
     }
+}
 
 @Preview(showBackground = true)
 @Composable

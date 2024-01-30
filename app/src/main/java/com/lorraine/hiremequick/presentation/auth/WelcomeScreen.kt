@@ -101,12 +101,10 @@ fun WelcomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.Center,
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = "Already have an account?")
-
-                Spacer(modifier = Modifier.width(4.dp))
                 TextButton(onClick = onLoginButtonClick) {
                     Text(
                         text = "SignIn",

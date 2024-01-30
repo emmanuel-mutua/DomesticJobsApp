@@ -241,6 +241,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
+                    modifier = Modifier.fillMaxWidth(),
                     onClick = {
                         if (selectedRole == "" || fullName == "" || phoneNumber == "" || email == "") {
                             Toast.makeText(context, "All fields required", Toast.LENGTH_SHORT)

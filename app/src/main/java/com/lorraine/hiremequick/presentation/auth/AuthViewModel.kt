@@ -14,10 +14,12 @@ import com.lorraine.hiremequick.data.repository.StorageService
 import com.lorraine.hiremequick.utils.Contants
 import com.lorraine.hiremequick.utils.Contants.JobSeeker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,6 +33,7 @@ class AuthViewModel @Inject constructor(
     init {
         reloadUser()
     }
+
     private var _registerState = MutableStateFlow(AuthStateData())
     val registerState = _registerState.asStateFlow()
 
@@ -42,46 +45,33 @@ class AuthViewModel @Inject constructor(
     private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
     val signInResponse = _signInResponse.asStateFlow()
 
+    private var _signInEventResponse = Channel<SignInEventResponse>()
+    val signInEventResponse = _signInEventResponse.receiveAsFlow()
+
     private val _signUpResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
     val signUpResponse = _signUpResponse.asStateFlow()
 
-    fun signInEmailAndPassword(email: String, password: String, onSuccess: () -> Unit) {
+    fun signInEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
-            _signInResponse.value = Response.Loading
+            _signInEventResponse.send(SignInEventResponse.Loading)
             val response = authRepo.signInEmailAndPassword(email, password)
             when (response) {
                 Response.Loading -> {
-                    _registerState.update {
-                        it.copy(
-                            isLoading = true,
-                        )
-                    }
+                    _signInEventResponse.send(SignInEventResponse.Loading)
                 }
 
                 is Response.Failure -> {
-                    _registerState.update {
-                        it.copy(
-                            isLoading = false,
-                            message = response.message,
-                        )
-                    }
+                    _signInEventResponse.send(SignInEventResponse.Message(message = response.message))
                 }
 
                 is Response.Success -> {
-                        _registerState.update {
-                            it.copy(
-                                isLoading = false,
-                                isSignedIn = true,
-                                message = "Success"
-                            )
-                        }
+                    _signInEventResponse.send(SignInEventResponse.Success)
                 }
 
                 Response.Idle -> Unit
             }
             _signInResponse.value = response
         }
-        onSuccess()
     }
 
     fun signUpEmailAndPassword(email: String, password: String) {
@@ -196,6 +186,12 @@ class AuthViewModel @Inject constructor(
             authRepo.reloadFirebaseUser()
         }
     }
+}
+
+sealed class SignInEventResponse {
+    data object Success : SignInEventResponse()
+    data object Loading : SignInEventResponse()
+    data class Message(val message: String) : SignInEventResponse()
 }
 
 data class AuthStateData(

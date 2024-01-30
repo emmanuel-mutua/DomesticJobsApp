@@ -1,8 +1,6 @@
 package com.lorraine.hiremequick.data.repository
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lorraine.hiremequick.data.model.JobPosting
@@ -25,13 +23,9 @@ object FirebaseJobPostingRepo : JobPostingRepo {
                 .whereEqualTo("employerId", employerId)
                 .get().await()
             val logs = snapshot.toObjects(JobPosting::class.java).groupBy {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val timestampMillis = it.datePosted
-                    val timestampInstant = Instant.ofEpochMilli(timestampMillis)
-                    timestampInstant.atZone(ZoneId.systemDefault()).toLocalDate()
-                } else {
-                    TODO("VERSION.SDK_INT < O")
-                }
+                val timestampMillis = it.datePosted
+                val timestampInstant = Instant.ofEpochMilli(timestampMillis)
+                timestampInstant.atZone(ZoneId.systemDefault()).toLocalDate()
             }
             flow {
                 emit(
@@ -50,13 +44,9 @@ object FirebaseJobPostingRepo : JobPostingRepo {
             val snapshot = jobPostingCollection
                 .get().await()
             val jobs = snapshot.toObjects(JobPosting::class.java).groupBy {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val timestampMillis = it.datePosted
-                    val timestampInstant = Instant.ofEpochMilli(timestampMillis)
-                    timestampInstant.atZone(ZoneId.systemDefault()).toLocalDate()
-                } else {
-                    TODO("VERSION.SDK_INT < O")
-                }
+                val timestampMillis = it.datePosted
+                val timestampInstant = Instant.ofEpochMilli(timestampMillis)
+                timestampInstant.atZone(ZoneId.systemDefault()).toLocalDate()
             }
             flow {
                 emit(
@@ -70,7 +60,6 @@ object FirebaseJobPostingRepo : JobPostingRepo {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getFilteredJobPostings(
         zonedDateTime: ZonedDateTime,
         studentId: String,
@@ -89,13 +78,9 @@ object FirebaseJobPostingRepo : JobPostingRepo {
                 .await()
 
             val logs = snapshot.toObjects(JobPosting::class.java).groupBy {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val timestampMillis = it.datePosted
-                    val timestampInstant = Instant.ofEpochMilli(timestampMillis)
-                    timestampInstant.atZone(ZoneId.systemDefault()).toLocalDate()
-                } else {
-                    TODO("VERSION.SDK_INT < O")
-                }
+                val timestampMillis = it.datePosted
+                val timestampInstant = Instant.ofEpochMilli(timestampMillis)
+                timestampInstant.atZone(ZoneId.systemDefault()).toLocalDate()
             }
             flow {
                 emit(
@@ -113,11 +98,8 @@ object FirebaseJobPostingRepo : JobPostingRepo {
             val document = jobPostingCollection
                 .whereEqualTo("jobId", jobId)
                 .get().await()
-            val jobPosting = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val jobPosting =
                 document.documents[0].toObject(JobPosting::class.java)
-            } else {
-                TODO("VERSION.SDK_INT < O")
-            }
             Log.d("TAG", "getSelectedJob: ${jobPosting?.title}")
             if (jobPosting != null) {
                 RequestState.Success(jobPosting)

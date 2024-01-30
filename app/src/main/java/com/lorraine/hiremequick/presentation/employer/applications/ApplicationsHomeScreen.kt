@@ -84,11 +84,11 @@ fun ApplicationsHomeScreen(
             } else if (jobApplicationsUiState.isLoading) {
                 LoadingScreen()
             } else if (jobApplicationsUiState.isError) {
-                com.lorraine.hiremequick.presentation.jobseeker.applications.ErrorScreen(
+               ErrorScreen(
                     jobApplicationsUiState.errorMessage
                 )
             } else {
-                com.lorraine.hiremequick.presentation.jobseeker.applications.EmptyPage()
+                EmptyPage()
             }
         },
     )

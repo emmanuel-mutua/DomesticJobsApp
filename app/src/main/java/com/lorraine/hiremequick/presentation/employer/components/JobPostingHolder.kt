@@ -180,6 +180,7 @@ fun DiaryHeader(title: String, time: Instant) {
             Spacer(modifier = Modifier.width(7.dp))
             Text(
                 text = title,
+                maxLines = 1,
                 color = MaterialTheme.colorScheme.onPrimary,
                 style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
             )

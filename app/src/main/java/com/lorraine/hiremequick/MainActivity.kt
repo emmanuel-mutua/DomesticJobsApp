@@ -11,25 +11,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
-import com.jakewharton.threetenabp.AndroidThreeTen
 import com.lorraine.hiremequick.presentation.auth.AuthNavGraph
 import com.lorraine.hiremequick.presentation.auth.AuthScreen
 import com.lorraine.hiremequick.presentation.auth.AuthViewModel
 import com.lorraine.hiremequick.ui.theme.AttachmentAppTheme
-
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -40,7 +33,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AndroidThreeTen.init(this)
+//        AndroidThreeTen.init(this)
         installSplashScreen()
         WindowCompat.setDecorFitsSystemWindows(window, true)
         setContent {

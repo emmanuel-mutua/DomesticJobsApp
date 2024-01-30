@@ -36,6 +36,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "17"
@@ -73,7 +74,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("androidx.navigation:navigation-compose:2.7.4")
 
-    implementation("com.jakewharton.threetenabp:threetenabp:1.3.0")
+//    implementation("com.jakewharton.threetenabp:threetenabp:1.3.0")
 
 
     // FIREBASE
@@ -105,4 +106,6 @@ dependencies {
 
     // IMAGE DISPLAY
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }

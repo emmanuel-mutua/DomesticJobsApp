@@ -1,6 +1,5 @@
 package com.lorraine.hiremequick.presentation.jobseeker.components
 
-import LogColors
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -75,12 +74,10 @@ fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
             tonalElevation = 0.dp,
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    DiaryHeader(
+                    JobPostHeader(
                         title = jobPosting.title,
                         time = Instant.ofEpochMilli(jobPosting.datePosted)
                     )
-                }
                 Text(
                     modifier = Modifier.padding(all = 14.dp),
                     text = jobPosting.description,
@@ -144,7 +141,6 @@ fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                         text = "Application DeadLine",
                         style = TextStyle(fontSize = MaterialTheme.typography.bodySmall.fontSize),
                     )
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         val formatter = remember {
                             DateTimeFormatter.ofPattern("d MMM uuuu", Locale.getDefault())
                                 .withZone(ZoneId.systemDefault())
@@ -154,16 +150,14 @@ fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                             color = MaterialTheme.colorScheme.error,
                             style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
                         )
-                    }
                 }
             }
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun DiaryHeader(title: String, time: Instant) {
+fun JobPostHeader(title: String, time: Instant) {
     val formatter = remember {
         DateTimeFormatter.ofPattern("hh:mm a", Locale.getDefault())
             .withZone(ZoneId.systemDefault())
@@ -181,6 +175,7 @@ fun DiaryHeader(title: String, time: Instant) {
             Spacer(modifier = Modifier.width(7.dp))
             Text(
                 text = title,
+                maxLines = 1,
                 color = MaterialTheme.colorScheme.onPrimary,
                 style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
             )
@@ -191,12 +186,6 @@ fun DiaryHeader(title: String, time: Instant) {
             style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
         )
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun DateHeader(date: Instant) {
-
 }
 
 @Composable

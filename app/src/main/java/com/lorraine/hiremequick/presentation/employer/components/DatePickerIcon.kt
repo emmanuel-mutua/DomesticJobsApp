@@ -1,8 +1,6 @@
 package com.lorraine.hiremequick.presentation.employer.components
 
-import android.os.Build
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,15 +26,11 @@ import java.time.ZonedDateTime
 @Composable
 fun DatePickerIcon(
     onDateTimeUpdated: (ZonedDateTime) -> Unit,
-    ) {
+) {
     val dateDialog = rememberSheetState()
     val timeDialog = rememberSheetState()
     var currentDate by remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mutableStateOf(LocalDate.now())
-        } else {
-            TODO("VERSION.SDK_INT < O")
-        }
+        mutableStateOf(LocalDate.now())
     }
     var currentTime by remember { mutableStateOf(LocalTime.now()) }
     var dateTimeUpdated by remember { mutableStateOf(false) }

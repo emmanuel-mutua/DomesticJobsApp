@@ -3,7 +3,6 @@ package com.lorraine.hiremequick.data.repository
 import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.lorraine.hiremequick.data.Response
 import com.lorraine.hiremequick.data.model.EmployerData
 import com.lorraine.hiremequick.data.model.JobPosting
 import com.lorraine.hiremequick.data.model.JobSeekerData

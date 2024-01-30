@@ -19,12 +19,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
-@RequiresApi(Build.VERSION_CODES.N)
 @HiltViewModel
 class EmployerHomeViewModel @Inject constructor(
     private val connectivity: NetworkConnectivityObserver,
@@ -41,9 +41,7 @@ class EmployerHomeViewModel @Inject constructor(
         private set
 
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getJobs()
-        }
+        getJobs()
         viewModelScope.launch {
             connectivity.observe().collect { network = it }
         }
@@ -53,9 +51,7 @@ class EmployerHomeViewModel @Inject constructor(
         dateIsSelected = zonedDateTime != null
         jobPostings.value = RequestState.Loading
         if (dateIsSelected && zonedDateTime != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                getAllJobsFiltered(zonedDateTime = zonedDateTime)
-            }
+            getAllJobsFiltered(zonedDateTime = zonedDateTime)
         } else {
             observeAllJobs()
         }
@@ -67,19 +63,23 @@ class EmployerHomeViewModel @Inject constructor(
             if (::filteredLogsJob.isInitialized) {
                 filteredLogsJob.cancelAndJoin()
             }
-            FirebaseJobPostingRepo.getAllJobsPostings(employerId = currentUserId).debounce(2000).collect { result ->
-                jobPostings.value = result
-            }
+            FirebaseJobPostingRepo.getAllJobsPostings(employerId = currentUserId).debounce(2000)
+                .collectLatest { result ->
+                    println(result)
+                    jobPostings.value = result
+                }
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun getAllJobsFiltered(zonedDateTime: ZonedDateTime) {
         filteredLogsJob = viewModelScope.launch {
             if (::allLogsJob.isInitialized) {
                 allLogsJob.cancelAndJoin()
             }
-            FirebaseJobPostingRepo.getFilteredJobPostings(zonedDateTime = zonedDateTime, studentId = currentUserId)
+            FirebaseJobPostingRepo.getFilteredJobPostings(
+                zonedDateTime = zonedDateTime,
+                studentId = currentUserId
+            )
                 .collect { result ->
                     jobPostings.value = result
                 }

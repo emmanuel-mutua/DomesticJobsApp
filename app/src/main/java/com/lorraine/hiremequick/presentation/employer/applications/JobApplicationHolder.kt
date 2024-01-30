@@ -62,7 +62,7 @@ fun JobApplicationHolder(
             tonalElevation = 0.dp,
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                com.lorraine.hiremequick.presentation.jobseeker.applications.JobApplicationHolderHeader(
+              JobApplicationHolderHeader(
                     title = jobApplication.jobTitle,
                 )
                 Text(text = "Experience Description", style =TextStyle(fontSize = MaterialTheme.typography.titleLarge.fontSize))

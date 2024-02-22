@@ -36,6 +36,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lorraine.hiremequick.data.model.JobPosting
+import com.lorraine.hiremequick.ui.theme.bodyBold
+import com.lorraine.hiremequick.ui.theme.bodyDescription
+import com.lorraine.hiremequick.ui.theme.bodySmall
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -81,8 +84,8 @@ fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                 Text(
                     modifier = Modifier.padding(all = 14.dp),
                     text = jobPosting.description,
-                    style = TextStyle(fontSize = MaterialTheme.typography.bodyLarge.fontSize),
-                    maxLines = 2,
+                    style = bodyDescription,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Row(
@@ -98,10 +101,7 @@ fun JobPostHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                         )
                         Text(
                             text = " ${jobPosting.nameOfCountry} , ${jobPosting.nameOfCity}",
-                            style = TextStyle(
-                                fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                                fontWeight = FontWeight.Bold
-                            ),
+                            style = bodyBold,
                         )
                     }
 
@@ -177,13 +177,13 @@ fun JobPostHeader(title: String, time: Instant) {
                 text = title,
                 maxLines = 1,
                 color = MaterialTheme.colorScheme.onPrimary,
-                style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+                style = bodyBold,
             )
         }
         Text(
             text = "Posted ${formatter.format(time)}",
             color = MaterialTheme.colorScheme.onPrimary,
-            style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+            style = bodyBold,
         )
     }
 }
@@ -202,7 +202,7 @@ fun MyClearBox(text: String) {
     ) {
         Text(
             text = text,
-            style = TextStyle(fontSize = MaterialTheme.typography.titleMedium.fontSize),
+            style = bodyDescription,
         )
     }
 }

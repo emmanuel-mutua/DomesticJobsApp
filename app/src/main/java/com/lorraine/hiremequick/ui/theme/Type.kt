@@ -34,6 +34,27 @@ val bodyMediumLight = TextStyle(
     lineHeight = 20.sp,
     letterSpacing = 1.sp,
 )
+val bodyDescription = TextStyle(
+fontFamily = Poppins,
+fontWeight = FontWeight.Normal,
+fontSize = 12.sp,
+lineHeight = 20.sp,
+letterSpacing = 0.sp,
+)
+val bodyBold = TextStyle(
+    fontFamily = Poppins,
+    fontWeight = FontWeight.Bold,
+    fontSize = 13.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.sp,
+)
+val applicationStatus = TextStyle(
+    fontFamily = Poppins,
+    fontWeight = FontWeight.Bold,
+    fontSize = 10.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.sp,
+)
 val bodySmall = TextStyle(
     fontFamily = Poppins,
     fontWeight = FontWeight.Normal,

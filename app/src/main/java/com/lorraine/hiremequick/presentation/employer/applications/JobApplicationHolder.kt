@@ -13,10 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,8 +26,11 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import com.lorraine.hiremequick.data.model.ApplicationStatus
 import com.lorraine.hiremequick.data.model.JobApplicationDetails
 import com.lorraine.hiremequick.presentation.components.ContactHolder
+import com.lorraine.hiremequick.ui.theme.bodyBold
+import com.lorraine.hiremequick.ui.theme.bodyDescription
 
 @Composable
 fun JobApplicationHolder(
@@ -38,6 +38,7 @@ fun JobApplicationHolder(
     sendMessage: (String) -> Unit,
     sendEmail: (String) -> Unit,
     call: (String) -> Unit,
+    acceptJobSeeker: (String) -> Unit,
 ) {
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
@@ -65,13 +66,13 @@ fun JobApplicationHolder(
               JobApplicationHolderHeader(
                     title = jobApplication.jobTitle,
                 )
-                Text(text = "Experience Description", style =TextStyle(fontSize = MaterialTheme.typography.titleLarge.fontSize))
+                Text(text = "Experience Description", style = bodyBold)
                 Text(
                     modifier = Modifier.padding(all = 14.dp),
                     text = jobApplication.experienceDescription,
-                    style = TextStyle(fontSize = MaterialTheme.typography.bodyLarge.fontSize),
+                    style = bodyDescription,
                 )
-                Text(text = "Contact ${jobApplication.applicantName}", style =TextStyle(fontSize = MaterialTheme.typography.titleLarge.fontSize))
+                Text(text = "Contact ${jobApplication.applicantName}", style = bodyBold)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -88,6 +89,14 @@ fun JobApplicationHolder(
                     ContactHolder(imageVector = Icons.Default.MailOutline, text = "Send Message") {
                         sendMessage.invoke(jobApplication.applicantPhoneNumber)
                     }
+                }
+                OutlinedButton(onClick = { acceptJobSeeker.invoke(jobApplication.applicantId) }) {
+                    val text = when(jobApplication.applicationStatus){
+                        ApplicationStatus.PENDING -> "Accept"
+                        ApplicationStatus.ACCEPTED -> "Revoke"
+                        ApplicationStatus.DECLINED -> "Revoke"
+                    }
+                    Text(text = text)
                 }
             }
         }
@@ -109,13 +118,13 @@ fun JobApplicationHolderHeader(title: String) {
             Text(
                 text = "JobTitle:",
                 color = MaterialTheme.colorScheme.onPrimary,
-                style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+                style = bodyBold,
             )
         }
         Text(
             text = title,
             color = MaterialTheme.colorScheme.onPrimary,
-            style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+            style = bodyBold,
         )
     }
 }

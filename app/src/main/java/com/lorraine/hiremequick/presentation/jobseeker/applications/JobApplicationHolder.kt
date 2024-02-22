@@ -1,36 +1,25 @@
 package com.lorraine.hiremequick.presentation.jobseeker.applications
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.MailOutline
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import com.lorraine.hiremequick.data.model.ApplicationStatus
 import com.lorraine.hiremequick.data.model.JobApplicationDetails
-import com.lorraine.hiremequick.presentation.components.ContactHolder
+import com.lorraine.hiremequick.ui.theme.applicationStatus
+import com.lorraine.hiremequick.ui.theme.bodyBold
+import com.lorraine.hiremequick.ui.theme.bodyDescription
 
 @Composable
 fun JobApplicationHolder(
@@ -62,13 +51,28 @@ fun JobApplicationHolder(
                 JobApplicationHolderHeader(
                     title = jobApplication.jobTitle,
                 )
-                Text(text = "Experience Description", style =TextStyle(fontSize = MaterialTheme.typography.titleLarge.fontSize))
+                Text(text = "Experience Description", style = bodyBold)
                 Text(
-                    modifier = Modifier.padding(all = 14.dp),
+                    modifier = Modifier.padding(all = 10.dp),
                     text = jobApplication.experienceDescription,
-                    style = TextStyle(fontSize = MaterialTheme.typography.bodyLarge.fontSize),
+                    style = bodyDescription,
                 )
-
+                Text(text = "Application Status:", style = applicationStatus)
+                var color = Color.Green
+                 ApplicationStatus.entries.map {
+                    color = when(it){
+                        ApplicationStatus.PENDING -> Color.Green
+                        ApplicationStatus.ACCEPTED -> Color.Red
+                        ApplicationStatus.DECLINED -> Color.Red
+                    }
+                }
+                Text(
+                    modifier = Modifier.padding(all = 10.dp),
+                    text = jobApplication.applicationStatus.name ?: "PENDING",
+                    style = TextStyle(
+                        color = color
+                    ),
+                )
             }
         }
     }
@@ -89,13 +93,13 @@ fun JobApplicationHolderHeader(title: String) {
             Text(
                 text = "JobTitle:",
                 color = MaterialTheme.colorScheme.onPrimary,
-                style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+                style = bodyBold,
             )
         }
         Text(
             text = title,
             color = MaterialTheme.colorScheme.onPrimary,
-            style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+            style = bodyBold,
         )
     }
 }

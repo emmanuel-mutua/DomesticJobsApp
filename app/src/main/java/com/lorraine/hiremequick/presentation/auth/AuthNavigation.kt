@@ -80,12 +80,12 @@ fun AuthNavGraph(
             )
         jobSeekerHomeScreen(
             navigateToLogin = {
-                activity.finish()
+                navController.navigateWithPop(AuthScreen.Welcome.route)
             },
         )
         employerHomeScreen(
             navigateToLogin = {
-                activity.finish()
+                navController.navigateWithPop(AuthScreen.Welcome.route)
             }
         )
     }
@@ -192,7 +192,7 @@ fun NavController.navigateWithPop(route: String) {
         // Pop up to the start destination of the graph to
         // avoid building up a large stack of destinations
         // on the back stack as users select items
-        popUpTo(graph.findStartDestination().id) {
+        popUpTo(AuthScreen.Welcome.route) {
             saveState = true
         }
         launchSingleTop = true

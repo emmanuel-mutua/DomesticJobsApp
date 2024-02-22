@@ -9,5 +9,6 @@ data class JobApplicationDetails(
     val jobTitle: String = "",
     val employerId: String = "",
     val selectedJobId: String = "",
-    val applicantId: String = ""
+    val applicantId: String = "",
+    val applicationStatus : ApplicationStatus = ApplicationStatus.PENDING
 )

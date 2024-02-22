@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.lorraine.hiremequick.data.model.JobApplicationDetails
 import com.lorraine.hiremequick.data.model.RequestState
+import com.lorraine.hiremequick.data.repository.JobApplicationRepo
 import com.lorraine.hiremequick.data.repository.JobApplicationRepoImpl
 import com.lorraine.hiremequick.presentation.jobseeker.applications.JobSeekerApplicationsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -81,6 +82,18 @@ class JobApplicationsViewModel @Inject constructor(
         intent.data = Uri.parse("mailto:$emailAddress")
         context.startActivity(Intent.createChooser(intent, "Send email"))
     }
+
+    fun acceptJobSeeker(applicantId: String) {
+        viewModelScope.launch {
+            JobApplicationRepoImpl.acceptJobSeeker(applicantId)
+        }
+    }
+    fun declineJobSeeker(applicantId: String) {
+        viewModelScope.launch {
+            JobApplicationRepoImpl.declineJobSeeker(applicantId)
+        }
+    }
+
 }
 
 data class JobApplicationsUiState(

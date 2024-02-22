@@ -25,7 +25,6 @@ fun UpdateJobScreen(
     onBackPressed: () -> Unit,
     onSaveClicked: (JobPosting) -> Unit,
 ) {
-
     Scaffold(
         topBar = {
             WriteTopBar(

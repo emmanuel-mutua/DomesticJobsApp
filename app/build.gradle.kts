@@ -6,7 +6,6 @@ plugins {
     id("com.google.gms.google-services")
 //    id("kotlin-kapt")
 }
-
 android {
     namespace = "com.lorraine.hiremequick"
     compileSdk = 34

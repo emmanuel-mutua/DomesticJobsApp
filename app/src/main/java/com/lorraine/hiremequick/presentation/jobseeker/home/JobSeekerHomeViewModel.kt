@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
-@RequiresApi(Build.VERSION_CODES.N)
 @HiltViewModel
 class JobSeekerHomeViewModel @Inject constructor(
     private val connectivity: NetworkConnectivityObserver,
@@ -41,21 +40,24 @@ class JobSeekerHomeViewModel @Inject constructor(
         private set
 
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getAllJobs()
-        }
         viewModelScope.launch {
             connectivity.observe().collect { network = it }
         }
-    }
+        when(network){
+            ConnectivityObserver.Status.Available -> TODO()
+            ConnectivityObserver.Status.Unavailable -> {
 
+            }
+            ConnectivityObserver.Status.Losing -> TODO()
+            ConnectivityObserver.Status.Lost -> TODO()
+        }
+    }
     fun getAllJobs(zonedDateTime: ZonedDateTime? = null) {
         dateIsSelected = zonedDateTime != null
         jobPostings.value = RequestState.Loading
         if (dateIsSelected && zonedDateTime != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 observeFilteredJobs(zonedDateTime = zonedDateTime)
-            }
         } else {
             observeAllJobs()
         }
@@ -73,7 +75,6 @@ class JobSeekerHomeViewModel @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun observeFilteredJobs(zonedDateTime: ZonedDateTime) {
         filteredLogsJob = viewModelScope.launch {
             if (::allLogsJob.isInitialized) {

@@ -40,6 +40,7 @@ import com.lorraine.hiremequick.presentation.jobseeker.moredetails.LoadingScreen
 fun ApplicationsHomeScreen(
     jobApplicationsUiState: JobSeekerApplicationsUiState,
     sendMessage: (String) -> Unit,
+    acceptJobSeeker: (String) -> Unit,
     sendEmail: (String) -> Unit,
     call: (String) -> Unit,
 ) {
@@ -72,6 +73,7 @@ fun ApplicationsHomeScreen(
                             sendEmail = sendEmail,
                             sendMessage = sendMessage,
                             call = call,
+                            acceptJobSeeker = acceptJobSeeker
                         )
                         HorizontalDivider(
                             modifier = Modifier

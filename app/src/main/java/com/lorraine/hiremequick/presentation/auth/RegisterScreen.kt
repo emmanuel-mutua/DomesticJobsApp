@@ -77,7 +77,6 @@ fun RegisterScreen(
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var fullName by remember { mutableStateOf("") }
-    var registrationNumber by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     val role by remember { mutableStateOf("") }

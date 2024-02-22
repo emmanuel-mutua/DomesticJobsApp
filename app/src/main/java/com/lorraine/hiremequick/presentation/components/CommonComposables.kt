@@ -39,6 +39,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.lorraine.hiremequick.R
+import com.lorraine.hiremequick.ui.theme.bodyDescription
 
 @Composable
 fun MyOutlinedTextField(
@@ -147,7 +148,7 @@ fun MyClearBox(text: String) {
     ) {
         Text(
             text = text,
-            style = TextStyle(fontSize = MaterialTheme.typography.titleMedium.fontSize),
+            style = bodyDescription,
         )
     }
 }
@@ -169,10 +170,7 @@ fun ContactHolder(
         Icon(imageVector = imageVector, tint = MaterialTheme.colorScheme.secondary,contentDescription = "Contact box")
         Text(
             text = text,
-            style = TextStyle(
-                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                color = MaterialTheme.colorScheme.secondary
-            ),
+            style = bodyDescription,
         )
     }
 }

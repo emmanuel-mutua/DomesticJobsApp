@@ -273,6 +273,9 @@ fun NavGraphBuilder.applications() {
             sendMessage = { phoneNumber ->
                 jobApplicationsViewModel.sendMessage(phoneNumber = phoneNumber, context = context)
             },
+            acceptJobSeeker = {
+                jobApplicationsViewModel.acceptJobSeeker(it)
+            },
             sendEmail = {
                 emailAddress ->
                 jobApplicationsViewModel.sendEmail(emailAddress = emailAddress, context = context)

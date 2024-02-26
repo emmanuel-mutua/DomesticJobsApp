@@ -18,6 +18,8 @@ interface JobApplicationRepo {
     suspend fun getJobSeekerApplications(jobSeekerId: String): RequestState<Flow<List<JobApplicationDetails>>>
     suspend fun acceptJobSeeker(applicantId : String)
     suspend fun declineJobSeeker(applicantId: String)
+    suspend fun getAcceptedEmailAddresses()
+    suspend fun getDeclineEmailAddresses()
 }
 
 object JobApplicationRepoImpl : JobApplicationRepo {
@@ -78,6 +80,14 @@ object JobApplicationRepoImpl : JobApplicationRepo {
             batch.set(docRef, newData, SetOptions.merge())
         }
         batch.commit().await()
+    }
+
+    override suspend fun getAcceptedEmailAddresses() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getDeclineEmailAddresses() {
+        TODO("Not yet implemented")
     }
 
 }

@@ -10,7 +10,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.lorraine.hiremequick.data.model.JobApplicationDetails
 import com.lorraine.hiremequick.data.model.RequestState
-import com.lorraine.hiremequick.data.repository.JobApplicationRepo
 import com.lorraine.hiremequick.data.repository.JobApplicationRepoImpl
 import com.lorraine.hiremequick.presentation.jobseeker.applications.JobSeekerApplicationsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +24,7 @@ import javax.inject.Inject
 class JobApplicationsViewModel @Inject constructor(
 
 ) : ViewModel() {
-    private var _uiState = MutableStateFlow(JobSeekerApplicationsUiState())
+    private var _uiState = MutableStateFlow(JobApplicationsUiState())
     val uiState = _uiState.asStateFlow()
 
     val currentUser : FirebaseUser? = FirebaseAuth.getInstance().currentUser
@@ -93,12 +92,89 @@ class JobApplicationsViewModel @Inject constructor(
             JobApplicationRepoImpl.declineJobSeeker(applicantId)
         }
     }
+    fun onApplicationEvent(event: ApplicationEvent){
+        when(event){
+            is ApplicationEvent.SendAcceptanceEmailEvent -> {
+                sendAcceptanceEmails(event.context)
+            }
+            is ApplicationEvent.SendDeclineEmailEvent -> {
+                sendDeclineEmails(event.context)
+            }
+        }
+    }
+
+    private fun sendAcceptanceEmails(context: Context){
+        val listOfEmails : ArrayList<String> = getAcceptedEmailAddresses()
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, listOfEmails)
+            putExtra(Intent.EXTRA_SUBJECT, "Acceptance")
+            putExtra(Intent.EXTRA_TEXT, "Write acceptance email body")
+        }
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
+        }else{
+            TODO("handle email failure")
+        }
+    }
+    private fun sendDeclineEmails(context: Context){
+        val listOfEmails : ArrayList<String> = getDeclinedEmailAddresses()
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, listOfEmails)
+            putExtra(Intent.EXTRA_SUBJECT, "Decline Draft")
+            putExtra(Intent.EXTRA_TEXT, "Write decline email body")
+        }
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
+        }else{
+            TODO("handle email failure")
+        }
+    }
+
+    private fun getAcceptedEmailAddresses() : ArrayList<String>{
+        _uiState.update {
+            it.copy(
+                isLoadingAcceptanceEmails = true
+            )
+        }
+        viewModelScope.launch {
+            JobApplicationRepoImpl.getAcceptedEmailAddresses()
+        }
+        _uiState.update {
+            it.copy(
+                isLoadingAcceptanceEmails = false
+            )
+        }
+        return uiState.value.emailAcceptedAddresses
+    }
+    private fun getDeclinedEmailAddresses() : ArrayList<String>{
+        _uiState.update {
+            it.copy(
+                isLoadingDeclineEmails = true
+            )
+        }
+        viewModelScope.launch {
+
+        }
+        _uiState.update {
+            it.copy(
+                isLoadingDeclineEmails = false
+            )
+        }
+        return uiState.value.emailDeclinedAddresses
+    }
+
 
 }
 
 data class JobApplicationsUiState(
     val jobApplications: List<JobApplicationDetails> = emptyList(),
+    val emailDeclinedAddresses : ArrayList<String> = arrayListOf(),
+    val emailAcceptedAddresses : ArrayList<String> = arrayListOf(),
     val isLoading: Boolean = false,
+    val isLoadingDeclineEmails : Boolean = false,
+    val isLoadingAcceptanceEmails : Boolean = false,
     val isError: Boolean = false,
     val errorMessage: String = ""
 )

@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.lorraine.hiremequick.data.model.ApplicationStatus
 import com.lorraine.hiremequick.data.model.JobApplicationDetails
@@ -39,12 +38,13 @@ fun JobApplicationHolder(
     sendEmail: (String) -> Unit,
     call: (String) -> Unit,
     acceptJobSeeker: (String) -> Unit,
+    declineJobSeeker: (String) -> Unit,
 ) {
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
 
     Row(
-        modifier = Modifier.padding(top = 5.dp )
+        modifier = Modifier.padding(top = 5.dp)
     ) {
         Spacer(modifier = Modifier.width(14.dp))
         Surface(
@@ -63,7 +63,7 @@ fun JobApplicationHolder(
             tonalElevation = 0.dp,
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-              JobApplicationHolderHeader(
+                JobApplicationHolderHeader(
                     title = jobApplication.jobTitle,
                 )
                 Text(text = "Experience Description", style = bodyBold)
@@ -90,14 +90,29 @@ fun JobApplicationHolder(
                         sendMessage.invoke(jobApplication.applicantPhoneNumber)
                     }
                 }
-                OutlinedButton(onClick = { acceptJobSeeker.invoke(jobApplication.applicantId) }) {
-                    val text = when(jobApplication.applicationStatus){
-                        ApplicationStatus.PENDING -> "Accept"
-                        ApplicationStatus.ACCEPTED -> "Revoke"
-                        ApplicationStatus.DECLINED -> "Revoke"
-                    }
-                    Text(text = text)
+                val acceptanceText = when (jobApplication.applicationStatus) {
+                    ApplicationStatus.PENDING -> "Accept"
+                    ApplicationStatus.ACCEPTED -> "Already Accepted"
+                    ApplicationStatus.DECLINED -> "Accept"
                 }
+                val declineText = when (jobApplication.applicationStatus) {
+                    ApplicationStatus.PENDING -> "Decline"
+                    ApplicationStatus.ACCEPTED -> "Decline"
+                    ApplicationStatus.DECLINED -> "Already Declined"
+                }
+                Row(
+                   modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    OutlinedButton(onClick = { acceptJobSeeker.invoke(jobApplication.applicantId) }) {
+                        Text(text = acceptanceText)
+                    }
+                    OutlinedButton(onClick = { declineJobSeeker.invoke(jobApplication.applicantId) }) {
+                        Text(text = declineText)
+                    }
+                }
+
             }
         }
     }

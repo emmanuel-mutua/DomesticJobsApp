@@ -26,6 +26,7 @@ import com.lorraine.hiremequick.presentation.components.DisplayAlertDialog
 import com.lorraine.hiremequick.presentation.employer.add.AddJobScreen
 import com.lorraine.hiremequick.presentation.employer.add.AddLogViewModel
 import com.lorraine.hiremequick.presentation.employer.add.UpdateJobScreen
+import com.lorraine.hiremequick.presentation.employer.applications.ApplicationEvent
 import com.lorraine.hiremequick.presentation.employer.applications.ApplicationsHomeScreen
 import com.lorraine.hiremequick.presentation.employer.applications.JobApplicationsViewModel
 import com.lorraine.hiremequick.presentation.employer.navigation.BottomNavigationWithBackStack
@@ -95,6 +96,7 @@ fun NavGraphBuilder.homeContent(
         )
     }
 }
+
 fun NavGraphBuilder.update(onBackPressed: () -> Unit) {
     composable(route = EmployerHomeDestinations.Update.route) {
         val viewModel: AddLogViewModel = hiltViewModel()
@@ -238,7 +240,7 @@ fun NavGraphBuilder.account(
 ) {
     composable(route = EmployerHomeDestinations.Account.route) {
         var dialogOpened by remember { mutableStateOf(false) }
-        val profileViewModel : ProfileViewModel = hiltViewModel()
+        val profileViewModel: ProfileViewModel = hiltViewModel()
         val uiState by profileViewModel.employerUiState.collectAsState()
         ProfileScreen(
             onSignOutClicked = {
@@ -265,7 +267,7 @@ fun NavGraphBuilder.account(
 
 fun NavGraphBuilder.applications() {
     composable(EmployerHomeDestinations.Notifications.route) {
-        val jobApplicationsViewModel : JobApplicationsViewModel = hiltViewModel()
+        val jobApplicationsViewModel: JobApplicationsViewModel = hiltViewModel()
         val jobApplicationsUiState by jobApplicationsViewModel.uiState.collectAsState()
         val context = LocalContext.current
         ApplicationsHomeScreen(
@@ -273,11 +275,16 @@ fun NavGraphBuilder.applications() {
             sendMessage = { phoneNumber ->
                 jobApplicationsViewModel.sendMessage(phoneNumber = phoneNumber, context = context)
             },
+            onApplicationEvent = { event ->
+                jobApplicationsViewModel.onApplicationEvent(event)
+            },
+            declineJobSeeker = {
+                jobApplicationsViewModel.declineJobSeeker(it)
+            },
             acceptJobSeeker = {
                 jobApplicationsViewModel.acceptJobSeeker(it)
             },
-            sendEmail = {
-                emailAddress ->
+            sendEmail = { emailAddress ->
                 jobApplicationsViewModel.sendEmail(emailAddress = emailAddress, context = context)
             }
         ) { phoneNumber ->

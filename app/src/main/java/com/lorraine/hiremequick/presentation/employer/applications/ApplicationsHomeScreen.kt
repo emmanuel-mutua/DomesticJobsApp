@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -26,11 +28,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lorraine.hiremequick.presentation.employer.components.HomeAppBar
-import com.lorraine.hiremequick.presentation.jobseeker.applications.JobSeekerApplicationsUiState
 import com.lorraine.hiremequick.presentation.jobseeker.moredetails.LoadingScreen
 
 
@@ -38,14 +40,17 @@ import com.lorraine.hiremequick.presentation.jobseeker.moredetails.LoadingScreen
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ApplicationsHomeScreen(
-    jobApplicationsUiState: JobSeekerApplicationsUiState,
+    jobApplicationsUiState: JobApplicationsUiState,
     sendMessage: (String) -> Unit,
+    onApplicationEvent: (ApplicationEvent) -> Unit,
     acceptJobSeeker: (String) -> Unit,
+    declineJobSeeker: (String) -> Unit,
     sendEmail: (String) -> Unit,
     call: (String) -> Unit,
 ) {
     var padding by remember { mutableStateOf(PaddingValues()) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val context = LocalContext.current
     Scaffold(
         modifier = Modifier
             .fillMaxWidth()
@@ -66,6 +71,21 @@ fun ApplicationsHomeScreen(
                         .navigationBarsPadding()
                         .padding(top = padding.calculateTopPadding()),
                 ) {
+                    item {
+                        Text(text = "Send Response Email to::")
+                        Row (
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ){
+
+                            OutlinedButton(onClick = { onApplicationEvent(ApplicationEvent.SendAcceptanceEmailEvent(context)) }) {
+                                Text(text = "All Accepted")
+                            }
+                            OutlinedButton(onClick = { onApplicationEvent(ApplicationEvent.SendDeclineEmailEvent(context)) }) {
+                                Text(text = "All Declined")
+                            }
+                        }
+                    }
                     items(jobApplicationsUiState.jobApplications) { jobApplicationDetails ->
                         //Applications Holder
                         JobApplicationHolder(
@@ -73,7 +93,8 @@ fun ApplicationsHomeScreen(
                             sendEmail = sendEmail,
                             sendMessage = sendMessage,
                             call = call,
-                            acceptJobSeeker = acceptJobSeeker
+                            acceptJobSeeker = acceptJobSeeker,
+                            declineJobSeeker = declineJobSeeker
                         )
                         HorizontalDivider(
                             modifier = Modifier

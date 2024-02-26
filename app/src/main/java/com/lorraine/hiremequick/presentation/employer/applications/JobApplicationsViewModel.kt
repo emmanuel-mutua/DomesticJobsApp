@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.lorraine.hiremequick.data.model.ApplicationStatus
 import com.lorraine.hiremequick.data.model.JobApplicationDetails
 import com.lorraine.hiremequick.data.model.RequestState
 import com.lorraine.hiremequick.data.repository.JobApplicationRepoImpl
@@ -104,21 +105,17 @@ class JobApplicationsViewModel @Inject constructor(
     }
 
     private fun sendAcceptanceEmails(context: Context){
-        val listOfEmails : ArrayList<String> = getAcceptedEmailAddresses()
-        val intent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:")
-            putExtra(Intent.EXTRA_EMAIL, listOfEmails)
-            putExtra(Intent.EXTRA_SUBJECT, "Acceptance")
-            putExtra(Intent.EXTRA_TEXT, "Write acceptance email body")
-        }
-        if (intent.resolveActivity(context.packageManager) != null) {
+        Log.d("SendEmail", "sendAcceptanceEmails: initialized")
+        val listOfEmails : ArrayList<String> = getAcceptedEmailAddresses() ?: return
+        val intent = Intent(Intent.ACTION_SENDTO)
+        intent.data = Uri.parse("mailto:$listOfEmails")
+        intent.putExtra(Intent.EXTRA_EMAIL, listOfEmails)
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Acceptance")
+        intent.putExtra(Intent.EXTRA_TEXT, "Write acceptance email body")
             context.startActivity(intent)
-        }else{
-            TODO("handle email failure")
-        }
     }
     private fun sendDeclineEmails(context: Context){
-        val listOfEmails : ArrayList<String> = getDeclinedEmailAddresses()
+        val listOfEmails : ArrayList<String> = getDeclinedEmailAddresses() ?: return
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:")
             putExtra(Intent.EXTRA_EMAIL, listOfEmails)
@@ -132,37 +129,43 @@ class JobApplicationsViewModel @Inject constructor(
         }
     }
 
-    private fun getAcceptedEmailAddresses() : ArrayList<String>{
+    private fun getAcceptedEmailAddresses() : ArrayList<String>?{
+        val myArray: ArrayList<String> = arrayListOf()
         _uiState.update {
             it.copy(
                 isLoadingAcceptanceEmails = true
             )
         }
-        viewModelScope.launch {
-            JobApplicationRepoImpl.getAcceptedEmailAddresses()
+        _uiState.value.jobApplications.forEach{ application ->
+            if (application.applicationStatus == ApplicationStatus.ACCEPTED) {
+                myArray.add(application.applicantEmail)
+            }
         }
         _uiState.update {
             it.copy(
                 isLoadingAcceptanceEmails = false
             )
         }
-        return uiState.value.emailAcceptedAddresses
+        return myArray
     }
-    private fun getDeclinedEmailAddresses() : ArrayList<String>{
+    private fun getDeclinedEmailAddresses() : ArrayList<String>?{
+        val myArray: ArrayList<String> = arrayListOf()
         _uiState.update {
             it.copy(
                 isLoadingDeclineEmails = true
             )
         }
-        viewModelScope.launch {
-
+        _uiState.value.jobApplications.forEach{application ->
+            if (application.applicationStatus == ApplicationStatus.DECLINED ||application.applicationStatus == ApplicationStatus.PENDING ) {
+                myArray?.add(application.applicantEmail)
+            }
         }
         _uiState.update {
             it.copy(
                 isLoadingDeclineEmails = false
             )
         }
-        return uiState.value.emailDeclinedAddresses
+        return myArray
     }
 
 

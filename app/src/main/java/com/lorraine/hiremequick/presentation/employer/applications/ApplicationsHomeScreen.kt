@@ -74,6 +74,7 @@ fun ApplicationsHomeScreen(
                     item {
                         Text(text = "Send Response Email to::")
                         Row (
+                            modifier = Modifier.padding(start = 20.dp).fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ){

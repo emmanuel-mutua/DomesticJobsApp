@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.remote.ConnectivityMonitor.NetworkStatus
+import com.lorraine.hiremequick.connectivity.ConnectivityObserver
+import com.lorraine.hiremequick.connectivity.NetworkConnectivityObserver
 import com.lorraine.hiremequick.data.Response
 import com.lorraine.hiremequick.data.model.EmployerData
 import com.lorraine.hiremequick.data.model.JobSeekerData
@@ -28,10 +31,12 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val authRepo: AuthRepository,
     private val storageService: StorageService,
+    private val networkConnectivityObserver: NetworkConnectivityObserver
 ) : ViewModel() {
 
     init {
         reloadUser()
+        checkNetwork()
     }
 
     private var _registerState = MutableStateFlow(AuthStateData())
@@ -43,13 +48,24 @@ class AuthViewModel @Inject constructor(
     private var _employerData = MutableStateFlow(EmployerData())
 
     private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
-    val signInResponse = _signInResponse.asStateFlow()
 
     private var _signInEventResponse = Channel<SignInEventResponse>()
     val signInEventResponse = _signInEventResponse.receiveAsFlow()
 
     private val _signUpResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
     val signUpResponse = _signUpResponse.asStateFlow()
+
+    private fun checkNetwork() {
+        viewModelScope.launch {
+            networkConnectivityObserver.observe().collectLatest { status ->
+                _registerState.update {
+                    it.copy(
+                        networkStatus = status
+                    )
+                }
+            }
+        }
+    }
 
     fun signInEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
@@ -74,7 +90,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signUpEmailAndPassword(email: String, password: String) {
+    private fun signUpEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
             _signUpResponse.value = Response.Loading
             val response = authRepo.signUpEmailAndPassword(email, password)
@@ -133,7 +149,7 @@ class AuthViewModel @Inject constructor(
                 delay(2000)
                 _jobSeekerData.update {
                     it.copy(
-                        uid = FirebaseAuth.getInstance()?.currentUser?.uid ?: "",
+                        uid = FirebaseAuth.getInstance().currentUser?.uid ?: "",
                     )
                 }
                 val response = storageService.addJobSeeker(_jobSeekerData.value)
@@ -144,7 +160,7 @@ class AuthViewModel @Inject constructor(
             viewModelScope.launch {
                 _employerData.update {
                     it.copy(
-                        uid = FirebaseAuth.getInstance()?.currentUser?.uid ?: "",
+                        uid = FirebaseAuth.getInstance().currentUser?.uid ?: "",
                     )
                 }
                 val response = storageService.addEmployer(_employerData.value)
@@ -163,7 +179,7 @@ class AuthViewModel @Inject constructor(
         }
         viewModelScope.launch {
             storageService.getUserData(
-                uid = FirebaseAuth.getInstance()?.currentUser?.uid ?: "",
+                uid = FirebaseAuth.getInstance().currentUser?.uid ?: "",
                 onSuccess = { document ->
                     Log.d("VM", document.id)
                     Log.d("VM", currentUserId)
@@ -181,7 +197,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun reloadUser() {
+    private fun reloadUser() {
         viewModelScope.launch {
             authRepo.reloadFirebaseUser()
         }
@@ -199,5 +215,6 @@ data class AuthStateData(
     val role: String = "",
     val message: String = "",
     val isSignedIn: Boolean = false,
+    val networkStatus: ConnectivityObserver.Status = ConnectivityObserver.Status.Unavailable,
 )
 

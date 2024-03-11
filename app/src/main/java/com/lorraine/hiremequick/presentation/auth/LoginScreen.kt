@@ -1,6 +1,7 @@
 package com.lorraine.hiremequick.presentation.auth
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lorraine.hiremequick.R
+import com.lorraine.hiremequick.connectivity.ConnectivityObserver
 import com.lorraine.hiremequick.presentation.components.MyOutlinedTextField
 import com.lorraine.hiremequick.presentation.components.PassWordField
 import com.lorraine.hiremequick.ui.theme.AttachmentAppTheme
@@ -180,6 +182,10 @@ fun LoginScreen(
             }
         }
     }
+}
+
+private fun showToast(context : Context, message : String){
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
 
 @Preview(showBackground = true)

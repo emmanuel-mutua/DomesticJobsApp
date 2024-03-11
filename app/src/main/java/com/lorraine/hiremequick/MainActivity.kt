@@ -1,7 +1,7 @@
 package com.lorraine.hiremequick
 
-import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,31 +29,26 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private var keepSplashOpened = true
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        AndroidThreeTen.init(this)
         installSplashScreen()
         WindowCompat.setDecorFitsSystemWindows(window, true)
         setContent {
             AttachmentAppTheme {
-                val authViewModel: AuthViewModel = hiltViewModel()
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    AttachmentApp(name = "AttachmentApp", activity = this)
+                    AttachmentApp()
                 }
             }
         }
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AttachmentApp(name: String, modifier: Modifier = Modifier, activity : Activity) {
+fun AttachmentApp() {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -75,7 +70,6 @@ fun AttachmentApp(name: String, modifier: Modifier = Modifier, activity : Activi
             navController = navController,
             authViewModel = authViewModel,
             registerState = registerState,
-            activity = activity
         )
     }
 }

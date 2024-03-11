@@ -52,7 +52,7 @@ fun EmployerHomeScreen(
             .navigationBarsPadding(),
         bottomBar = {
             val currentRoute =
-                navController.currentBackStackEntryAsState()?.value?.destination?.route
+                navController.currentBackStackEntryAsState().value?.destination?.route
             if (currentRoute != EmployerHomeDestinations.Add.route) {
                 BottomNavigationWithBackStack(navController = navController)
             }

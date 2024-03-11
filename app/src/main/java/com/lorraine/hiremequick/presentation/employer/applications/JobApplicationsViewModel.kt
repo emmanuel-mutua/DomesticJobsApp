@@ -157,7 +157,7 @@ class JobApplicationsViewModel @Inject constructor(
         }
         _uiState.value.jobApplications.forEach{application ->
             if (application.applicationStatus == ApplicationStatus.DECLINED ||application.applicationStatus == ApplicationStatus.PENDING ) {
-                myArray?.add(application.applicantEmail)
+                myArray.add(application.applicantEmail)
             }
         }
         _uiState.update {

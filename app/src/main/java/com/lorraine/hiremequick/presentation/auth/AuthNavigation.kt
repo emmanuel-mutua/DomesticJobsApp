@@ -1,7 +1,5 @@
 package com.lorraine.hiremequick.presentation.auth
 
-import android.annotation.SuppressLint
-import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,7 +23,6 @@ fun AuthNavGraph(
     navController: NavHostController,
     authViewModel: AuthViewModel,
     registerState: AuthStateData,
-    activity: Activity,
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
         welcomeScreen(
@@ -80,12 +76,12 @@ fun AuthNavGraph(
             )
         jobSeekerHomeScreen(
             navigateToLogin = {
-                navController.navigateWithPop(AuthScreen.Welcome.route)
+                navController.navigateAndPopHome(AuthScreen.Welcome.route)
             },
         )
         employerHomeScreen(
             navigateToLogin = {
-                navController.navigateWithPop(AuthScreen.Welcome.route)
+                navController.navigateAndPopHome(AuthScreen.Welcome.route)
             }
         )
     }
@@ -125,8 +121,6 @@ fun NavGraphBuilder.registerScreen(
         )
     }
 }
-
-@SuppressLint("CoroutineCreationDuringComposition")
 fun NavGraphBuilder.homeScreen(
     registerState: AuthStateData,
     viewModel: AuthViewModel,
@@ -187,16 +181,19 @@ fun NavGraphBuilder.employerHomeScreen(navigateToLogin: () -> Unit) {
     }
 }
 
-fun NavController.navigateWithPop(route: String) {
+private fun NavController.navigateWithPop(route: String) {
     navigate(route) {
-        // Pop up to the start destination of the graph to
-        // avoid building up a large stack of destinations
-        // on the back stack as users select items
         popUpTo(AuthScreen.Welcome.route) {
             saveState = true
         }
-        launchSingleTop = true
         restoreState = true
+    }
+}
+
+private fun NavController.navigateAndPopHome(route:String){
+    popBackStack()
+    navigate(route){
+        popUpTo(AuthScreen.Welcome.route)
     }
 }
 

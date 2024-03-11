@@ -50,7 +50,7 @@ fun JobSeekerHomeDashboard(
             .navigationBarsPadding(),
         bottomBar = {
             val currentRoute =
-                navController.currentBackStackEntryAsState()?.value?.destination?.route
+                navController.currentBackStackEntryAsState().value?.destination?.route
             if (currentRoute == JobSeekerHomeDestinations.Home.route ||
             currentRoute == JobSeekerHomeDestinations.JobApplications.route ||
             currentRoute == JobSeekerHomeDestinations.Account.route

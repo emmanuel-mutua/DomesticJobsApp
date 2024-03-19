@@ -7,11 +7,11 @@ plugins {
 //    id("kotlin-kapt")
 }
 android {
-    namespace = "com.lorraine.hiremequick"
+    namespace = "com.lorraine.domesticjobs"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "ccom.lorraine.hiremequick"
+        applicationId = "ccom.lorraine.domesticjobs"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -63,7 +63,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -77,10 +76,12 @@ dependencies {
 
 
     // FIREBASE
-    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
+    implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-storage-ktx")
+
 
     // dagger hilt
     implementation("com.google.dagger:hilt-android:2.48.1")

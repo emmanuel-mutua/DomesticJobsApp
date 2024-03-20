@@ -40,6 +40,7 @@ import com.lorraine.domesticjobs.presentation.employer.components.HomeAppBar
 fun EmployerHomeScreen(
     jobs: JobPostings,
     navigateToWrite: () -> Unit,
+    navigateToApplications: (String) -> Unit,
 ) {
     var padding by remember { mutableStateOf(PaddingValues()) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -53,26 +54,26 @@ fun EmployerHomeScreen(
                 scrollBehavior = scrollBehavior,
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                modifier = Modifier.padding(
-                    end = padding.calculateEndPadding(LayoutDirection.Ltr),
-                    bottom = 50.dp
-                ),
-                onClick = navigateToWrite,
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "New Job Icon",
-                    )
-                    Text(text = "Job")
-                }
-            }
-        },
+//        floatingActionButton = {
+//            FloatingActionButton(
+//                modifier = Modifier.padding(
+//                    end = padding.calculateEndPadding(LayoutDirection.Ltr),
+//                    bottom = 50.dp
+//                ),
+//                onClick = navigateToWrite,
+//            ) {
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.SpaceEvenly
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Default.Add,
+//                        contentDescription = "New Job Icon",
+//                    )
+//                    Text(text = "Job")
+//                }
+//            }
+//        },
         content = {
             padding = it
             when (jobs) {
@@ -84,6 +85,7 @@ fun EmployerHomeScreen(
                             //navigateToWriteWithArgs
                             //Disable onclick
                         },
+                        navigateToApplications = navigateToApplications
                     )
                 }
 

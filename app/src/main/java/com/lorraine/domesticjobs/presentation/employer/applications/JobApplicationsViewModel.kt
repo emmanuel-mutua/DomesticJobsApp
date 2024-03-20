@@ -30,18 +30,21 @@ class JobApplicationsViewModel @Inject constructor(
     val currentUser : FirebaseUser? = FirebaseAuth.getInstance().currentUser
     val employerId  = currentUser?.uid!!
     init {
-        getJobApplications(employerId)
+
     }
 
-    fun getJobApplications(employerId: String) {
+    fun getApplications(jobId: String?) {
+        getJobApplications(employerId, jobId)
+    }
+    fun getJobApplications(employerId: String, jobId: String?) {
         _uiState.update {
             it.copy(
                 isLoading = true
             )
         }
         viewModelScope.launch {
-            Log.d("JobApplicationsViewModel", ": Getting data")
-            val applications = JobApplicationRepoImpl.getJobApplications(employerId)
+            Log.d("JobApplicationsViewModel", ": Getting data for job id: $jobId")
+            val applications = JobApplicationRepoImpl.getJobApplications(employerId, jobId)
             when (applications) {
                 is RequestState.Success -> {
                     applications.data.collectLatest { jobApplications ->
@@ -82,14 +85,14 @@ class JobApplicationsViewModel @Inject constructor(
         context.startActivity(Intent.createChooser(intent, "Send email"))
     }
 
-    fun acceptJobSeeker(applicantId: String) {
+    fun acceptJobSeeker(applicantId: String, jobId: String) {
         viewModelScope.launch {
-            JobApplicationRepoImpl.acceptJobSeeker(applicantId)
+            JobApplicationRepoImpl.acceptJobSeeker(applicantId, jobId)
         }
     }
-    fun declineJobSeeker(applicantId: String) {
+    fun declineJobSeeker(applicantId: String, jobId: String) {
         viewModelScope.launch {
-            JobApplicationRepoImpl.declineJobSeeker(applicantId)
+            JobApplicationRepoImpl.declineJobSeeker(applicantId, jobId)
         }
     }
     fun onApplicationEvent(event: ApplicationEvent){
@@ -166,7 +169,6 @@ class JobApplicationsViewModel @Inject constructor(
         }
         return myArray
     }
-
 
 }
 

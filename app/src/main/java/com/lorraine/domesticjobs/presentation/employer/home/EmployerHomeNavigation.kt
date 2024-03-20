@@ -65,6 +65,9 @@ fun EmployerHomeScreen(
                     navigateToWrite = {
                         navController.navigate(EmployerHomeDestinations.Add.route)
                     },
+                    navigateToApplications = {jobId ->
+                        navController.navigate("${EmployerHomeDestinations.Notifications.route}/$jobId")
+                    }
                 )
                 add(
                     onBackPressed = { navController.popBackStack() },
@@ -85,6 +88,7 @@ fun EmployerHomeScreen(
 
 fun NavGraphBuilder.homeContent(
     navigateToWrite: () -> Unit,
+    navigateToApplications: (String) -> Unit,
 ) {
     composable(route = EmployerHomeDestinations.Home.route) {
         val viewModel: EmployerHomeViewModel = hiltViewModel()
@@ -92,6 +96,7 @@ fun NavGraphBuilder.homeContent(
         EmployerHomeScreen(
             jobs = attachmentLogs.value,
             navigateToWrite = navigateToWrite,
+            navigateToApplications = navigateToApplications,
         )
     }
 }
@@ -277,8 +282,10 @@ fun NavGraphBuilder.account(
 }
 
 fun NavGraphBuilder.applications() {
-    composable(EmployerHomeDestinations.Notifications.route) {
+    composable("${EmployerHomeDestinations.Notifications.route}/{jobId}") {
         val jobApplicationsViewModel: JobApplicationsViewModel = hiltViewModel()
+        val jobId : String? = it.arguments?.getString("jobId")
+        jobApplicationsViewModel.getApplications(jobId)
         val jobApplicationsUiState by jobApplicationsViewModel.uiState.collectAsState()
         val context = LocalContext.current
         ApplicationsHomeScreen(
@@ -289,11 +296,11 @@ fun NavGraphBuilder.applications() {
             onApplicationEvent = { event ->
                 jobApplicationsViewModel.onApplicationEvent(event)
             },
-            declineJobSeeker = {
-                jobApplicationsViewModel.declineJobSeeker(it)
+            declineJobSeeker = { applicantId, jobId ->
+                jobApplicationsViewModel.declineJobSeeker(applicantId, jobId)
             },
-            acceptJobSeeker = {
-                jobApplicationsViewModel.acceptJobSeeker(it)
+            acceptJobSeeker = {applicantId, jobId ->
+            jobApplicationsViewModel.acceptJobSeeker(applicantId, jobId)
             },
             sendEmail = { emailAddress ->
                 jobApplicationsViewModel.sendEmail(emailAddress = emailAddress, context = context)

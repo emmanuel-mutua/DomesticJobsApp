@@ -132,14 +132,17 @@ fun TextFieldWithoutBorders(
 }
 
 @Composable
-fun MyClearBox(text: String) {
+fun MyClearBox(text: String, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .background(
                 MaterialTheme.colorScheme.surfaceVariant,
                 shape = MaterialTheme.shapes.medium
             )
-            .padding(horizontal = 14.dp, vertical = 14.dp),
+            .padding(horizontal = 14.dp, vertical = 14.dp)
+            .clickable {
+                onClick.invoke()
+            },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -164,7 +167,11 @@ fun ContactHolder(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(imageVector = imageVector, tint = MaterialTheme.colorScheme.secondary,contentDescription = "Contact box")
+        Icon(
+            imageVector = imageVector,
+            tint = MaterialTheme.colorScheme.secondary,
+            contentDescription = "Contact box"
+        )
         Text(
             text = text,
             style = bodyDescription,

@@ -37,8 +37,8 @@ fun JobApplicationHolder(
     sendMessage: (String) -> Unit,
     sendEmail: (String) -> Unit,
     call: (String) -> Unit,
-    acceptJobSeeker: (String) -> Unit,
-    declineJobSeeker: (String) -> Unit,
+    acceptJobSeeker: (String, String) -> Unit,
+    declineJobSeeker: (String, String) -> Unit,
 ) {
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
@@ -107,14 +107,24 @@ fun JobApplicationHolder(
                     ApplicationStatus.DECLINED -> "Already Declined"
                 }
                 Row(
-                   modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    OutlinedButton(onClick = { acceptJobSeeker.invoke(jobApplication.applicantId) }) {
+                    OutlinedButton(onClick = {
+                        acceptJobSeeker.invoke(
+                            jobApplication.applicantId,
+                            jobApplication.selectedJobId
+                        )
+                    }) {
                         Text(text = acceptanceText)
                     }
-                    OutlinedButton(onClick = { declineJobSeeker.invoke(jobApplication.applicantId) }) {
+                    OutlinedButton(onClick = {
+                        declineJobSeeker.invoke(
+                            jobApplication.applicantId,
+                            jobApplication.selectedJobId
+                        )
+                    }) {
                         Text(text = declineText)
                     }
                 }

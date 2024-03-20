@@ -32,6 +32,7 @@ fun EmployerHomeContent(
     paddingValues: PaddingValues,
     jobPosting: Map<LocalDate, List<JobPosting>>,
     onClick: (String) -> Unit,
+    navigateToApplications: (String) -> Unit,
 ) {
     if (jobPosting.isNotEmpty()) {
         LazyColumn(
@@ -47,7 +48,10 @@ fun EmployerHomeContent(
                     items = jobs,
                     key = { it.jobId },
                 ) {
-                    JobPostingHolder(jobPosting = it, onClick = onClick)
+                    JobPostingHolder(
+                        jobPosting = it,
+                        onApplicantsClick = navigateToApplications,
+                        onClick = onClick)
                 }
             }
         }

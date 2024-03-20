@@ -26,7 +26,7 @@ fun HomeAppBar(
 
         },
         title = {
-            Text(text = "HireMeQuick", color = MaterialTheme.colorScheme.primary)
+            Text(text = "Domestic Jobs Search App", color = MaterialTheme.colorScheme.primary)
         },
         actions = {
                 IconButton(onClick = {

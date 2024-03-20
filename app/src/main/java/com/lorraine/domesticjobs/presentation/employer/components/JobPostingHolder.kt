@@ -43,7 +43,11 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun JobPostingHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
+fun JobPostingHolder(
+    jobPosting: JobPosting,
+    onClick: (String) -> Unit,
+    onApplicantsClick: (String) -> Unit
+) {
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
 
@@ -55,7 +59,9 @@ fun JobPostingHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                 interactionSource = remember {
                     MutableInteractionSource()
                 },
-            ) { onClick(jobPosting.jobId) },
+            ) {
+//                onClick(jobPosting.jobId)
+            },
     ) {
         Spacer(modifier = Modifier.width(4.dp))
         Surface(
@@ -119,6 +125,7 @@ fun JobPostingHolder(jobPosting: JobPosting, onClick: (String) -> Unit) {
                 ) {
                     MyClearBox(
                         text = "${jobPosting.applicantIds.size} Applicants",
+                        onClick = { onApplicantsClick(jobPosting.jobId) }
                     )
                     Text(
                         modifier = Modifier.padding(all = 14.dp),

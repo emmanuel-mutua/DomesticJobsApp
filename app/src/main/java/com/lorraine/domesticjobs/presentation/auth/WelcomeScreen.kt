@@ -47,7 +47,7 @@ fun WelcomeScreen(
                 .weight(1f)
         ) {
             Image(
-               painter = painterResource(id = R.drawable.mancleaning),
+               painter = painterResource(id = R.drawable.domestic),
                 contentDescription = "Welcome Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -64,7 +64,7 @@ fun WelcomeScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Find your perfect career here",
+                text = "Domestic Job Search App",
                 style = titleLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -72,7 +72,7 @@ fun WelcomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Discover your ideal career and find the right opportunities that match your skills and passion.",
+                text = "Connecting employers with domestic job seekers with ease on one platform.",
                 style = bodyMediumLight,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F),
                 fontSize = 16.sp

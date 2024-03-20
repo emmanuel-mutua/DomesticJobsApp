@@ -25,8 +25,8 @@ sealed class EmployerHomeDestinations(
         label = "Update Job",
         icon = R.drawable.baseline_add,
     ) {
-        fun passJobPostingId(attachLogId: String) =
-            "update_job?$ADD_SCREEN_ARGUMENT_KEY=$attachLogId"
+        fun passJobPostingId(jobId: String) =
+            "update_job?$ADD_SCREEN_ARGUMENT_KEY=$jobId"
     }
 
     object Notifications : EmployerHomeDestinations(

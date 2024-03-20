@@ -43,8 +43,8 @@ fun ApplicationsHomeScreen(
     jobApplicationsUiState: JobApplicationsUiState,
     sendMessage: (String) -> Unit,
     onApplicationEvent: (ApplicationEvent) -> Unit,
-    acceptJobSeeker: (String) -> Unit,
-    declineJobSeeker: (String) -> Unit,
+    acceptJobSeeker: (String, String) -> Unit,
+    declineJobSeeker: (String, String) -> Unit,
     sendEmail: (String) -> Unit,
     call: (String) -> Unit,
 ) {
@@ -73,29 +73,44 @@ fun ApplicationsHomeScreen(
                 ) {
                     item {
                         Text(text = "Send Response Email to::")
-                        Row (
+                        Row(
                             modifier = Modifier
                                 .padding(start = 20.dp)
                                 .fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
-                        ){
+                        ) {
 
-                            OutlinedButton(onClick = { onApplicationEvent(ApplicationEvent.SendAcceptanceEmailEvent(context)) }) {
+                            OutlinedButton(onClick = {
+                                onApplicationEvent(
+                                    ApplicationEvent.SendAcceptanceEmailEvent(
+                                        context
+                                    )
+                                )
+                            }) {
                                 Text(text = "All Accepted")
                             }
-                            OutlinedButton(onClick = { onApplicationEvent(ApplicationEvent.SendDeclineEmailEvent(context)) }) {
+                            OutlinedButton(onClick = {
+                                onApplicationEvent(
+                                    ApplicationEvent.SendDeclineEmailEvent(
+                                        context
+                                    )
+                                )
+                            }) {
                                 Text(text = "All Declined")
                             }
                         }
-                        Row (
+                        Row(
                             modifier = Modifier
                                 .padding(start = 10.dp)
                                 .fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
-                        ){
-                            Text(text = "No of Applications: ${jobApplicationsUiState.jobApplications.size}", modifier = Modifier.padding(5.dp))
+                        ) {
+                            Text(
+                                text = "No of Applications: ${jobApplicationsUiState.jobApplications.size}",
+                                modifier = Modifier.padding(5.dp)
+                            )
 //                            Button(onClick = { }) {
 //                                Row(
 //                                    verticalAlignment = Alignment.CenterVertically,
@@ -128,7 +143,7 @@ fun ApplicationsHomeScreen(
             } else if (jobApplicationsUiState.isLoading) {
                 LoadingScreen()
             } else if (jobApplicationsUiState.isError) {
-               ErrorScreen(
+                ErrorScreen(
                     jobApplicationsUiState.errorMessage
                 )
             } else {

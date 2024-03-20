@@ -27,7 +27,8 @@ fun BottomNavigationWithBackStack(
 ) {
     val navigationItems: List<EmployerHomeDestinations> = listOf(
         EmployerHomeDestinations.Home,
-        EmployerHomeDestinations.Notifications,
+        EmployerHomeDestinations.Add,
+//        EmployerHomeDestinations.Notifications,
         EmployerHomeDestinations.Account,
     )
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -40,7 +41,8 @@ fun BottomNavigationWithBackStack(
                 val route = it.destination.route
                 previousBottomNav = when (route) {
                     EmployerHomeDestinations.Home.route -> EmployerHomeDestinations.Home
-                    EmployerHomeDestinations.Notifications.route -> EmployerHomeDestinations.Notifications
+//                    EmployerHomeDestinations.Notifications.route -> EmployerHomeDestinations.Notifications
+                    EmployerHomeDestinations.Add.route -> EmployerHomeDestinations.Add
                     EmployerHomeDestinations.Account.route -> EmployerHomeDestinations.Account
                     else -> previousBottomNav
                 }

@@ -213,7 +213,7 @@ fun MoreDetailsScreen(
                         viewModel.setEmployerIdAndJobIdAndTitle(
                             employerId = jobPosting.employerId,
                             jobTitle = jobPosting.title,
-                            selectedJobId = jobPosting.title
+                            selectedJobId = jobPosting.jobId
                         )
                         viewModel.sendApplicationDetails(
                             onSuccess = {

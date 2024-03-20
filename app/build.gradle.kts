@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "ccom.lorraine.domesticjobs"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -70,7 +70,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 
 //    implementation("com.jakewharton.threetenabp:threetenabp:1.3.0")
 
@@ -93,19 +93,23 @@ dependencies {
     implementation("com.github.stevdza-san:MessageBarCompose:1.0.8")
 
     // Date-Time Picker
-    implementation("com.maxkeppeler.sheets-compose-dialogs:core:1.2.1")
+    implementation("com.maxkeppeler.sheets-compose-dialogs:core:1.3.0")
 
     // CALENDAR
-    implementation("com.maxkeppeler.sheets-compose-dialogs:calendar:1.2.1")
+    implementation("com.maxkeppeler.sheets-compose-dialogs:calendar:1.3.0")
 
     // SPLASH SCREEN
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     // CLOCK
-    implementation("com.maxkeppeler.sheets-compose-dialogs:clock:1.2.1")
+    implementation("com.maxkeppeler.sheets-compose-dialogs:clock:1.3.0")
 
     // IMAGE DISPLAY
     implementation("io.coil-kt:coil-compose:2.5.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
+    //apache poi
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
 }

@@ -32,6 +32,8 @@ import com.lorraine.domesticjobs.presentation.employer.navigation.BottomNavigati
 import com.lorraine.domesticjobs.presentation.employer.navigation.EmployerHomeDestinations
 import com.lorraine.domesticjobs.presentation.employer.profile.ProfileScreen
 import com.lorraine.domesticjobs.presentation.employer.profile.ProfileViewModel
+import com.lorraine.domesticjobs.presentation.jobseeker.navigation.JobSeekerBottomNavigationWithBackStack
+import com.lorraine.domesticjobs.presentation.jobseeker.navigation.JobSeekerHomeDestinations
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -52,7 +54,10 @@ fun EmployerHomeScreen(
         bottomBar = {
             val currentRoute =
                 navController.currentBackStackEntryAsState().value?.destination?.route
-            if (currentRoute != EmployerHomeDestinations.Add.route) {
+            if (currentRoute == EmployerHomeDestinations.Home.route ||
+                currentRoute == EmployerHomeDestinations.Add.route ||
+                currentRoute == EmployerHomeDestinations.Account.route
+            ){
                 BottomNavigationWithBackStack(navController = navController)
             }
         },
@@ -65,7 +70,7 @@ fun EmployerHomeScreen(
                     navigateToWrite = {
                         navController.navigate(EmployerHomeDestinations.Add.route)
                     },
-                    navigateToApplications = {jobId ->
+                    navigateToApplications = { jobId ->
                         navController.navigate("${EmployerHomeDestinations.Notifications.route}/$jobId")
                     }
                 )
@@ -284,7 +289,7 @@ fun NavGraphBuilder.account(
 fun NavGraphBuilder.applications() {
     composable("${EmployerHomeDestinations.Notifications.route}/{jobId}") {
         val jobApplicationsViewModel: JobApplicationsViewModel = hiltViewModel()
-        val jobId : String? = it.arguments?.getString("jobId")
+        val jobId: String? = it.arguments?.getString("jobId")
         jobApplicationsViewModel.getApplications(jobId)
         val jobApplicationsUiState by jobApplicationsViewModel.uiState.collectAsState()
         val context = LocalContext.current
@@ -299,9 +304,13 @@ fun NavGraphBuilder.applications() {
             declineJobSeeker = { applicantId, jobId ->
                 jobApplicationsViewModel.declineJobSeeker(applicantId, jobId)
             },
-            acceptJobSeeker = {applicantId, jobId ->
-            jobApplicationsViewModel.acceptJobSeeker(applicantId, jobId)
+            acceptJobSeeker = { applicantId, jobId ->
+                jobApplicationsViewModel.acceptJobSeeker(applicantId, jobId)
             },
+            downloadApplications = { applications ->
+                jobApplicationsViewModel.downloadApplications(applications, context)
+            }
+            ,
             sendEmail = { emailAddress ->
                 jobApplicationsViewModel.sendEmail(emailAddress = emailAddress, context = context)
             }

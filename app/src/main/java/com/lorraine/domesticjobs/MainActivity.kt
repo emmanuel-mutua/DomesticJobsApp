@@ -63,7 +63,7 @@ fun AttachmentApp() {
             } else {
                 AuthScreen.Welcome.route
             }
-        val registerState = authViewModel.registerState.collectAsState().value
+        val registerState = authViewModel.authState.collectAsState().value
         AuthNavGraph(
             startDestination = startDestination,
             navController = navController,

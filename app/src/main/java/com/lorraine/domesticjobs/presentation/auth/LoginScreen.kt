@@ -31,6 +31,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,37 +53,31 @@ import com.lorraine.domesticjobs.R
 import com.lorraine.domesticjobs.presentation.components.MyOutlinedTextField
 import com.lorraine.domesticjobs.presentation.components.PassWordField
 import com.lorraine.domesticjobs.ui.theme.AttachmentAppTheme
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginScreen(
-    registerState: AuthStateData,
     viewModel: AuthViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
     navigateToHome: () -> Unit,
     navigateToForgotPassword: () -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
+    val authState by viewModel.authState.collectAsState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
     LaunchedEffect(key1 = true) {
-        viewModel.signInEventResponse.collect { event ->
+        viewModel.authEventResponse.collectLatest { event ->
             when (event) {
-                is SignInEventResponse.Loading -> {
-                    isLoading = true
+                is AuthEventResponse.Failure -> {
+                    showToast(context, event.message)
                 }
 
-                is SignInEventResponse.Message -> {
-                    isLoading = false
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
-
-                is SignInEventResponse.Success -> {
-                    isLoading = false
-                    Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show()
+                is AuthEventResponse.Success -> {
+                    showToast(context, "Success")
                     navigateToHome()
                 }
             }
@@ -167,7 +162,7 @@ fun LoginScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             ) {
-                if (!isLoading) {
+                if (!authState.isLoading) {
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -184,7 +179,7 @@ fun LoginScreen(
     }
 }
 
-private fun showToast(context : Context, message : String){
+private fun showToast(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
 
@@ -192,9 +187,8 @@ private fun showToast(context : Context, message : String){
 @Composable
 fun LoginScreenPrev() {
     AttachmentAppTheme {
-        val vm : AuthViewModel = hiltViewModel()
+        val vm: AuthViewModel = hiltViewModel()
         LoginScreen(
-            registerState = AuthStateData(),
             viewModel = vm,
             {}, {}, {}
         )

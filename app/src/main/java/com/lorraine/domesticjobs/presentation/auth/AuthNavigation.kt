@@ -34,7 +34,6 @@ fun AuthNavGraph(
             }
         )
         loginScreen(
-            registerState = registerState,
             viewModel = authViewModel,
             navigateBack = {
                 navController.popBackStack()
@@ -97,7 +96,6 @@ fun AuthNavGraph(
 }
 
 fun NavGraphBuilder.loginScreen(
-    registerState: AuthStateData,
     viewModel: AuthViewModel,
     navigateBack: () -> Unit,
     navigateToHome: () -> Unit,
@@ -105,7 +103,6 @@ fun NavGraphBuilder.loginScreen(
 ) {
     composable(AuthScreen.Login.route) {
         LoginScreen(
-            registerState = registerState,
             viewModel = viewModel,
             navigateBack = navigateBack,
             navigateToHome = navigateToHome,

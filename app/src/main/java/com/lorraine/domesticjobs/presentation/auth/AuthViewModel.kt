@@ -37,8 +37,8 @@ class AuthViewModel @Inject constructor(
         checkNetwork()
     }
 
-    private var _registerState = MutableStateFlow(AuthStateData())
-    val registerState = _registerState.asStateFlow()
+    private var _authState = MutableStateFlow(AuthStateData())
+    val authState = _authState.asStateFlow()
 
     val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
     private val currentUserId = currentUser?.uid ?: ""
@@ -47,16 +47,13 @@ class AuthViewModel @Inject constructor(
 
     private val _signInResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
 
-    private var _signInEventResponse = Channel<SignInEventResponse>()
-    val signInEventResponse = _signInEventResponse.receiveAsFlow()
-
-    private val _signUpResponse = MutableStateFlow<Response<Boolean>>(Response.Idle)
-    val signUpResponse = _signUpResponse.asStateFlow()
+    private var _authEventResponse = Channel<AuthEventResponse>()
+    val authEventResponse = _authEventResponse.receiveAsFlow()
 
     private fun checkNetwork() {
         viewModelScope.launch {
             networkConnectivityObserver.observe().collectLatest { status ->
-                _registerState.update {
+                _authState.update {
                     it.copy(
                         networkStatus = status
                     )
@@ -67,33 +64,44 @@ class AuthViewModel @Inject constructor(
 
     fun signInEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
-            _signInEventResponse.send(SignInEventResponse.Loading)
+            updateLoading(true)
             val response = authRepo.signInEmailAndPassword(email, password)
             when (response) {
-                Response.Loading -> {
-                    _signInEventResponse.send(SignInEventResponse.Loading)
-                }
 
                 is Response.Failure -> {
-                    _signInEventResponse.send(SignInEventResponse.Message(message = response.message))
+                    _authEventResponse.send(AuthEventResponse.Failure(message = response.message))
                 }
 
                 is Response.Success -> {
-                    _signInEventResponse.send(SignInEventResponse.Success)
+                    _authEventResponse.send(AuthEventResponse.Success)
                 }
 
                 Response.Idle -> Unit
             }
             _signInResponse.value = response
         }
+        updateLoading(false)
     }
 
     private fun signUpEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
-            _signUpResponse.value = Response.Loading
+            //update state to loading
             val response = authRepo.signUpEmailAndPassword(email, password)
             delay(3000)
-            _signUpResponse.value = response
+            when (response) {
+                is Response.Failure -> {
+                    onAuthError(response.message)
+                }
+
+                Response.Idle -> {
+
+                }
+
+                is Response.Success -> {
+                    saveUserToDataBase()
+                }
+
+            }
         }
     }
 
@@ -101,12 +109,9 @@ class AuthViewModel @Inject constructor(
         authRepo.signOut()
     }
 
-    fun signUpUser(email: String, password: String) {
-        signUpEmailAndPassword(email, password)
-    }
 
     fun setRole(roleOption: String) {
-        _registerState.update {
+        _authState.update {
             it.copy(
                 role = roleOption,
             )
@@ -117,8 +122,10 @@ class AuthViewModel @Inject constructor(
         fullName: String,
         phoneNumber: String,
         email: String,
+        password: String,
     ) {
-        val role = _registerState.value.role
+        updateLoading(true)
+        val role = _authState.value.role
         if (role == JobSeeker) {
             _jobSeekerData.update {
                 it.copy(
@@ -138,10 +145,11 @@ class AuthViewModel @Inject constructor(
                 )
             }
         }
+        signUpEmailAndPassword(email, password)
     }
 
-    fun saveUserToDataBase() {
-        val role = _registerState.value.role
+    private fun saveUserToDataBase() {
+        val role = _authState.value.role
         if (role == Contants.JobSeeker) {
             viewModelScope.launch {
                 delay(2000)
@@ -151,7 +159,14 @@ class AuthViewModel @Inject constructor(
                     )
                 }
                 val response = storageService.addJobSeeker(_jobSeekerData.value)
-                if (response) {
+                when (response) {
+                    true -> {
+                        onAuthSuccess()
+                    }
+
+                    false -> {
+                        onAuthError("Error during registration, try again")
+                    }
                 }
             }
         } else {
@@ -162,15 +177,35 @@ class AuthViewModel @Inject constructor(
                     )
                 }
                 val response = storageService.addEmployer(_employerData.value)
-                if (response) {
+                when (response) {
+                    true -> {
+                        onAuthSuccess()
+                    }
+
+                    false -> {
+                        onAuthError("Unknown error occurred, try again")
+                    }
                 }
             }
         }
     }
 
+    private fun onAuthSuccess() {
+        updateLoading(false)
+        viewModelScope.launch {
+            _authEventResponse.send(AuthEventResponse.Success)
+        }
+    }
+
+    private fun onAuthError(errorMessage: String) {
+        updateLoading(false)
+        viewModelScope.launch {
+            _authEventResponse.send(AuthEventResponse.Failure(errorMessage))
+        }
+    }
 
     fun getRoleFromUserData(onDataLoaded: (String) -> Unit) {
-        _registerState.update {
+        _authState.update {
             it.copy(
                 isLoading = true,
             )
@@ -183,7 +218,7 @@ class AuthViewModel @Inject constructor(
                     Log.d("VM", currentUserId)
                     val userRole = document.getString("role") ?: ""
                     Log.d("VM", userRole)
-                    _registerState.update {
+                    _authState.update {
                         it.copy(
                             role = userRole,
                             isLoading = false,
@@ -201,31 +236,35 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun resetPassword(email: String) :Boolean{
+    fun resetPassword(email: String): Boolean {
         viewModelScope.launch {
-           val result =  authRepo.resetPassword(email)
-            _registerState.update {
+            val result = authRepo.resetPassword(email)
+            _authState.update {
                 it.copy(
                     resetPassResult = result
                 )
             }
         }
-        return _registerState.value.resetPassResult
+        return _authState.value.resetPassResult
+    }
+    fun updateLoading(loading : Boolean){
+        _authState.update {
+            it.copy(
+                isLoading = loading
+            )
+        }
     }
 }
 
-sealed class SignInEventResponse {
-    data object Success : SignInEventResponse()
-    data object Loading : SignInEventResponse()
-    data class Message(val message: String) : SignInEventResponse()
+sealed class AuthEventResponse {
+    data object Success : AuthEventResponse()
+    data class Failure(val message: String) : AuthEventResponse()
 }
 
 data class AuthStateData(
     val isLoading: Boolean = false,
     val role: String = "",
-    val resetPassResult : Boolean= false,
-    val message: String = "",
-    val isSignedIn: Boolean = false,
+    val resetPassResult: Boolean = false,
     val networkStatus: ConnectivityObserver.Status = ConnectivityObserver.Status.Unavailable,
 )
 

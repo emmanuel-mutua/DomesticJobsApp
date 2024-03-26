@@ -64,6 +64,8 @@ import com.lorraine.domesticjobs.presentation.components.PassWordField
 import com.lorraine.domesticjobs.ui.theme.AttachmentAppTheme
 import com.lorraine.domesticjobs.utils.Contants.Employer
 import com.lorraine.domesticjobs.utils.Contants.JobSeeker
+import com.lorraine.domesticjobs.utils.showToast
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -75,7 +77,6 @@ fun RegisterScreen(
     onGotoLoginClicked: () -> Unit,
 ) {
     val passwordVisible by rememberSaveable { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -86,39 +87,19 @@ fun RegisterScreen(
     var selectedRole by remember { mutableStateOf(role) }
     val roles = listOf(Employer, JobSeeker)
     val context = LocalContext.current
-    val signUpResponse by viewModel.signUpResponse.collectAsState()
-    when (signUpResponse) {
-        Response.Loading -> {
-            isLoading = true
-        }
-
-        is Response.Success -> {
-            isLoading = false
-            val isSignedUp = (signUpResponse as Response.Success<Boolean>).data
-            if (isSignedUp) {
-                LaunchedEffect(Unit) {
-                    viewModel.saveUserToDataBase()
+    val authState by viewModel.authState.collectAsState()
+    LaunchedEffect(key1 = true) {
+        viewModel.authEventResponse.collectLatest { response ->
+            when (response) {
+                is AuthEventResponse.Failure -> {
+                    showToast(context, response.message)
+                }
+                AuthEventResponse.Success -> {
+                    showToast(context, "Account created, please login")
                     onSuccessRegistration()
-                    Toast.makeText(
-                        context,
-                        "Account created,Login",
-                        Toast.LENGTH_LONG,
-                    )
-                        .show()
                 }
             }
         }
-
-        is Response.Failure -> {
-            isLoading = false
-            val message = (signUpResponse as Response.Failure).message
-            LaunchedEffect(Unit) {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT)
-                    .show()
-            }
-        }
-
-        else -> {}
     }
 
     Scaffold(
@@ -140,172 +121,172 @@ fun RegisterScreen(
                 })
         }
     ) {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .fillMaxWidth()
+                    .weight(0.5f)
             ) {
-
-                Box(
+                Image(
+                    painter = painterResource(id = R.drawable.register),
+                    contentDescription = "Signup Image",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(0.5f)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.register),
-                        contentDescription = "Signup Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(MaterialTheme.shapes.extraSmall)
+                        .fillMaxSize()
+                        .clip(MaterialTheme.shapes.extraSmall)
+                )
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp, start = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Select:", fontSize = 13.sp)
+                roles.forEach { roleOption ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(
+                            selected = roleOption == selectedRole,
+                            onClick = {
+                                selectedRole = roleOption
+                                viewModel.setRole(selectedRole)
+                            },
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(roleOption, fontSize = 15.sp)
+                    }
+                }
+            }
+
+            MyOutlinedTextField(
+                value = fullName,
+                placeHolder = "FullName",
+                onValueChange = { fullName = it },
+                isError = false,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                ),
+            )
+
+            MyOutlinedTextField(
+                value = phoneNumber,
+                placeHolder = "Phone Number",
+                onValueChange = { phoneNumber = it },
+                isError = false,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Phone,
+                ),
+            )
+
+            MyOutlinedTextField(
+                value = email,
+                placeHolder = "Email",
+                onValueChange = { email = it },
+                isError = false,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                ),
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+
+            PassWordField(
+                isPasswordVisible = passwordVisible,
+                passwordValue = password,
+                label = "Password",
+                isError = false,
+                onValueChange = { password = it },
+            )
+            PassWordField(
+                isPasswordVisible = passwordVisible,
+                passwordValue = confirmPassword,
+                label = "ConfirmPassword",
+                isError = isPassWordError,
+                onValueChange = {
+                    confirmPassword = it
+                    isPassWordError = confirmPassword != password
+                },
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    if (selectedRole == "" || fullName == "" || phoneNumber == "" || email == "") {
+                        Toast.makeText(context, "All fields required", Toast.LENGTH_SHORT)
+                            .show()
+                        return@Button
+                    }
+                    if (isPassWordError) {
+                        Toast.makeText(context, "Password Mismatch", Toast.LENGTH_SHORT)
+                            .show()
+                        return@Button
+                    }
+                    viewModel.saveUserDetails(
+                        fullName,
+                        phoneNumber,
+                        email,
+                        password
                     )
-                }
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 10.dp, start = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(7.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("Select:", fontSize = 13.sp)
-                    roles.forEach { roleOption ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(
-                                selected = roleOption == selectedRole,
-                                onClick = {
-                                    selectedRole = roleOption
-                                    viewModel.setRole(selectedRole)
-                                },
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(roleOption, fontSize = 15.sp)
-                        }
-                    }
-                }
-
-                MyOutlinedTextField(
-                    value = fullName,
-                    placeHolder = "FullName",
-                    onValueChange = { fullName = it },
-                    isError = false,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                    ),
-                )
-
-                MyOutlinedTextField(
-                    value = phoneNumber,
-                    placeHolder = "Phone Number",
-                    onValueChange = { phoneNumber = it },
-                    isError = false,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Phone,
-                    ),
-                )
-
-                MyOutlinedTextField(
-                    value = email,
-                    placeHolder = "Email",
-                    onValueChange = { email = it },
-                    isError = false,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                    ),
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-
-                PassWordField(
-                    isPasswordVisible = passwordVisible,
-                    passwordValue = password,
-                    label = "Password",
-                    isError = false,
-                    onValueChange = { password = it },
-                )
-                PassWordField(
-                    isPasswordVisible = passwordVisible,
-                    passwordValue = confirmPassword,
-                    label = "ConfirmPassword",
-                    isError = isPassWordError,
-                    onValueChange = {
-                        confirmPassword = it
-                        isPassWordError = confirmPassword != password
-                    },
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        if (selectedRole == "" || fullName == "" || phoneNumber == "" || email == "") {
-                            Toast.makeText(context, "All fields required", Toast.LENGTH_SHORT)
-                                .show()
-                            return@Button
-                        }
-                        if (isPassWordError) {
-                            Toast.makeText(context, "Password Mismatch", Toast.LENGTH_SHORT)
-                                .show()
-                            return@Button
-                        }
-                        viewModel.saveUserDetails(
-                            fullName,
-                            phoneNumber,
-                            email,
-                        )
-                        viewModel.signUpUser(email, password)
-                    },
-                    shape = RoundedCornerShape(16),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
-                ) {
-                    if (!isLoading) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            text = "Register",
-                            textAlign = TextAlign.Center,
-                            fontSize = 18.sp,
-                        )
-                    } else {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
-                    }
-                }
-                TextButton(
-                    onClick = onGotoLoginClicked,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
+                },
+                shape = RoundedCornerShape(16),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+            ) {
+                if (!authState.isLoading) {
                     Text(
-                        text = buildAnnotatedString {
-                            withStyle(
-                                style = SpanStyle(),
-                            ) {
-                                append("Already have an account?")
-                            }
-                            append(" ")
-                            withStyle(
-                                style = SpanStyle(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold,
-                                ),
-                            ) {
-                                append("Login")
-                            }
-                        },
-                        fontFamily = FontFamily.SansSerif,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        text = "Register",
                         textAlign = TextAlign.Center,
+                        fontSize = 18.sp,
                     )
+                } else {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
                 }
+            }
+            TextButton(
+                onClick = onGotoLoginClicked,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(),
+                        ) {
+                            append("Already have an account?")
+                        }
+                        append(" ")
+                        withStyle(
+                            style = SpanStyle(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                            ),
+                        ) {
+                            append("Login")
+                        }
+                    },
+                    fontFamily = FontFamily.SansSerif,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }
+}
 
 @Preview
 @Composable

@@ -1,6 +1,5 @@
 package com.lorraine.domesticjobs.presentation.jobseeker.moredetails
 
-import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +10,7 @@ import com.lorraine.domesticjobs.data.model.JobPosting
 import com.lorraine.domesticjobs.data.model.RequestState
 import com.lorraine.domesticjobs.data.repository.FirebaseJobPostingRepo
 import com.lorraine.domesticjobs.data.repository.JobApplicationRepoImpl
+import com.lorraine.domesticjobs.data.repository.StorageService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,25 +20,46 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MoreDetailsViewModel @Inject constructor(
+    private val storageService: StorageService
 ) : ViewModel() {
-    private val currentUser : FirebaseUser? = FirebaseAuth.getInstance().currentUser
-    private var _uiState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    private val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
+    private var _uiState =
         MutableStateFlow(UiState(selectedJob = JobPosting().apply { }))
-    } else {
-        TODO("VERSION.SDK_INT < O")
-    }
     val uiState = _uiState.asStateFlow()
 
 
     private var _jobApplicationDetails = MutableStateFlow(JobApplicationDetails())
     val jobApplicationDetails = _jobApplicationDetails.asStateFlow()
+
     init {
+        getUserData()
         _jobApplicationDetails.update {
             it.copy(
-                applicantId = currentUser?.uid?:"applicant id null"
+                applicantId = currentUser?.uid ?: "applicant id null"
             )
         }
     }
+
+    private fun getUserData() {
+        viewModelScope.launch {
+            storageService.getUserData(
+                uid = FirebaseAuth.getInstance().currentUser?.uid ?: "",
+                onSuccess = { document ->
+                    val fullName = document.getString("fullName") ?: ""
+                    val email = document.getString("email") ?: ""
+                    val phoneNumber = document.getString("phoneNumber") ?: ""
+                    _jobApplicationDetails.update {
+                        it.copy(
+                            applicantName = fullName,
+                            applicantEmail = email,
+                            applicantPhoneNumber = phoneNumber
+                        )
+                    }
+                },
+            )
+        }
+    }
+
     fun getSelectedJob(jobPostingId: String?) {
         _uiState.update {
             it.copy(
@@ -98,15 +119,15 @@ class MoreDetailsViewModel @Inject constructor(
         }
     }
 
-    fun setApplicantExperienceDescription(experienceDescription: String) {
+    fun setApplicantExperienceDescription(experienceDescription: String, selectedYoe : String, selectedExperienceLevel: String ) {
         _jobApplicationDetails.update {
             it.copy(
-                experienceDescription = experienceDescription
+                experienceDescription = "Years of experience: $selectedYoe, Skills Level: $selectedExperienceLevel . Additional Details: $experienceDescription"
             )
         }
     }
 
-     fun setEmployerIdAndJobIdAndTitle(employerId: String,selectedJobId :String,jobTitle : String) {
+    fun setEmployerIdAndJobIdAndTitle(employerId: String, selectedJobId: String, jobTitle: String) {
         _jobApplicationDetails.update {
             it.copy(
                 employerId = employerId,
@@ -122,9 +143,12 @@ class MoreDetailsViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             val request = JobApplicationRepoImpl.insertJobApplication(_jobApplicationDetails.value)
-            when(request){
+            when (request) {
                 is RequestState.Success -> {
-                    Log.d("MoreDetailsVm", "sendApplicationDetails: ${_jobApplicationDetails.value.selectedJobId}")
+                    Log.d(
+                        "MoreDetailsVm",
+                        "sendApplicationDetails: ${_jobApplicationDetails.value.selectedJobId}"
+                    )
                     _jobApplicationDetails.update {
                         it.copy(
                             applicantName = "",
@@ -133,9 +157,11 @@ class MoreDetailsViewModel @Inject constructor(
                     }
                     onSuccess()
                 }
+
                 is RequestState.Error -> {
                     onError("Error occurred")
                 }
+
                 RequestState.Idle -> Unit
                 RequestState.Loading -> {
 
@@ -144,11 +170,11 @@ class MoreDetailsViewModel @Inject constructor(
         }
     }
 
-    fun updateApplicants(jobId:String){
+    fun updateApplicants(jobId: String) {
         viewModelScope.launch {
             FirebaseJobPostingRepo.addApplicantIdToJobPosting(
                 jobId = jobId,
-                applicantId = currentUser?.uid?:"new applicant"
+                applicantId = currentUser?.uid ?: "new applicant"
             )
         }
     }

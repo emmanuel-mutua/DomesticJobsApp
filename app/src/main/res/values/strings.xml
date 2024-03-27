@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Domestic Jobs</string>
+    <string name="content_desc_open_multi_select">Open multi select\n</string>
+    <string name="content_desc_hide_multi_select">Hide Multi select</string>
+    <string name="areas_of_expertise_label">Areas of expertise\n</string>
+    <string name="areas_of_expertise_placeholder">Areas of expertise</string>
 </resources>

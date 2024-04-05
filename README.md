@@ -1,9 +1,7 @@
 - EmployerScreens
 
 - Auth
-![img.png](images/welcome.png)
-![img.png](images/register.png)
-![img.png](images/login.png)
+![img.png](images/welcome.png) ![img.png](images/register.png) ![img.png](images/login.png)
 
 - Home
 ![images/img.png](images/img.png)
